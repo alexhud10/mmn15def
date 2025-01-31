@@ -1,0 +1,23 @@
+# Ignore compiled binaries
+*.o
+*.exe
+*.out
+*.obj
+
+# Ignore Python cache and virtual env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# Ignore IDE config files
+.vscode/
+.idea/
+*.suo
+*.sln
+*.user
+*.VC.db
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
