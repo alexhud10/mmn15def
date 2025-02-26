@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>23f6a577-f628-4ec9-bc63-7e48b663ee6d</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>config.py</StartupFile>
+    <StartupFile>userManager.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

@@ -1,2 +1,6 @@
 ﻿  client.cpp
-C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\client\client.cpp(4,10): error C1083: Cannot open include file: 'cryptopp/aes.h': No such file or directory
+  Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
+  - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
+  - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
+  Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
+  client.vcxproj -> C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\x64\Debug\client.exe

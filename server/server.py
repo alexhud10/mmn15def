@@ -1,34 +1,32 @@
-
+# getting connection info from config.py and connecting with socket
 import socket
 import threading
-from message_handler import handle_client  # Assuming handle_client is defined elsewhere
-from config import get_port # confic is a file, get_port is the func we will use or can do * for getting all func
+from messageHandler import handle_client  # Assuming handle_client is defined elsewhere
+from config import get_port # config is a file, get_port is the func we will use or can do * for getting all func
+
 
 def start_server(host, port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((host, port))
-        s.listen(5)  
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((host, port))
+    s.listen(5)
 
-    print(f"Server started on {host}:{port}")
+    print(f"Server listening on {host}:{port}")
 
     while True:
-        # Accept a client connection
         conn, addr = s.accept()
         print(f"Connection from {addr}")
 
-        # Create a new thread to handle the client connection
-        client_thread = threading.Thread(target=handle_client, args=(c,))
+        # new thread to handle the client connection
+        client_thread = threading.Thread(target=handle_client, args=(conn,))
         client_thread.start()
+        print("server is ready")
 
 def main():
-    host = "127.0.0.1"  # Localhost
-    port = 8080          # Default port
-
-    # Load configurations (like port) if needed
-    # For example, you might want to use `config.py` to read from a file:
-    # port = config.get_port_from_file('myport.info')
+    host = "127.0.0.1" 
+    port = get_port('myport.info')
 
     start_server(host, port)
+
 
 if __name__ == "__main__":
     main()
