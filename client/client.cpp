@@ -10,28 +10,31 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;  
 
-void send_message(const string& message) {
-    send_data(message);  // Reusing the send_data function from network.cpp
+void send_message(tcp::socket& socket, const string& message) {
+    send_data(socket, message);  // function from network.cpp
 }
 
-string receive_message() {
-    return receive_data();  // Reusing the receive_data function from network.cpp
+string receive_message(tcp::socket& socket) {
+    return receive_data(socket);  // function from network.cpp
 }
 
 void client_function(int client_id, const string& server_ip, int server_port) {
     try {
-        // Connect to the server using the provided IP and port
-        connect_to_server(server_ip, server_port);
+        boost::asio::io_context io_context;  // each client gets its own io_context
+        tcp::socket sock(io_context);  // each client gets its own socket
+        
+        connect_to_server(sock, server_ip, server_port);
 
         // Send a message
-        string message = "Hello from Client " + to_string(client_id);
-        send_message(message);
+        string message = "Hello from Client " + to_string(client_id) + "\n";
+        send_message(sock, message);
 
         // Receive a response
-        string response = receive_message();
+        string response = receive_message(sock);
         if (!response.empty()) {
             cout << "Client " << client_id << " received: " << response << endl;
         }
@@ -40,7 +43,7 @@ void client_function(int client_id, const string& server_ip, int server_port) {
         }
 
         // Close the connection
-        close_connection();
+        close_connection(sock);
     }
     catch (const std::exception& e) {
         cerr << "Client " << client_id << " encountered an error: " << e.what() << endl;
@@ -60,10 +63,10 @@ int main() {
     string server_ip = cfg.getIP();
     int server_port = cfg.getPort();
 
-    // Number of client threads to create
+    // number of client threads to create
     const int num_clients = 2;
 
-    // Create and launch multiple client threads
+    // create and launch multiple client threads
     vector<thread> client_threads;
 
     for (int i = 1; i <= num_clients; ++i) {
@@ -71,7 +74,7 @@ int main() {
     }
 
 
-    // Wait for all client threads to finish
+    // wait for all client threads to finish
     for (auto& t : client_threads) {
         t.join();
     }

@@ -8,7 +8,7 @@ def get_port(file_path):
 
             return port
     except (FileNotFoundError, ValueError) as e:
-        print(f"Error: {e}. Returning default port 1234.")
+        print(f"Error: {e}. Returning default port 1234.\n")
         return 1234
 
 

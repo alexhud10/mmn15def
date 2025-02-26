@@ -14,7 +14,7 @@ def start_server(host, port):
 
     while True:
         conn, addr = s.accept()
-        print(f"Connection from {addr}")
+        print(f"Connection from {addr}\n")
 
         # new thread to handle the client connection
         client_thread = threading.Thread(target=handle_client, args=(conn,))
