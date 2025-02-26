@@ -31,10 +31,10 @@ private:
 void connect_to_server(const string& server_ip, int server_port);
 
 // Function to send a message to the server
-void send_message(const string& message);
+void send_data(const string& message);
 
 // Function to receive a message from the server
-string receive_message();
+string receive_data();
 
 // Function to close the connection
 void close_connection();

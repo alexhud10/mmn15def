@@ -8,10 +8,10 @@
 void connect_to_server(const std::string& server_ip, int server_port);
 
 // Function to send a message to the server
-void send_message(const std::string& message);
+void send_data(const std::string& message);
 
 // Function to receive a response from the server
-std::string receive_message();
+std::string receive_data();
 
 // Function to close the socket connection after communication is done
 void close_connection();

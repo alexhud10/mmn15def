@@ -1,4 +1,4 @@
-# open file with connection info 
+# open file with connection info
 
 def get_port(file_path):
     try:

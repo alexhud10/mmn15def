@@ -1,3 +1,10 @@
+/*
+This source file implements the network-related functions
+ using Boost.Asio to manage socket connections
+ and data transfer between the client and the server
+*/
+
+
 #include "network.h"
 #include <boost/asio.hpp>  
 #include <iostream>
@@ -29,7 +36,7 @@ void connect_to_server(const std::string& server_ip, int server_port) {
     }
 }
 
-void send_message(const std::string& message) {
+void send_data(const std::string& message) {
     try {
         // Send the message to the server
         boost::asio::write(sock, boost::asio::buffer(message));
@@ -40,7 +47,7 @@ void send_message(const std::string& message) {
     }
 }
 
-std::string receive_message() {
+std::string receive_data() {
     try {
         char response[128];
         size_t length = sock.read_some(boost::asio::buffer(response));
