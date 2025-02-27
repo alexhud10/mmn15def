@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "client_ui.h" 
 
 using namespace std;  
 
@@ -30,23 +31,23 @@ void client_function(int client_id, const string& server_ip, int server_port) {
         connect_to_server(sock, server_ip, server_port);
 
         // Send a message
-        string message = "Hello from Client " + to_string(client_id) + "\n";
+        string message = get_user_input();
         send_message(sock, message);
 
         // Receive a response
         string response = receive_message(sock);
         if (!response.empty()) {
-            cout << "Client " << client_id << " received: " << response << endl;
+            display_message(response);
         }
         else {
-            cout << "No response from server." << endl;
+            display_err("No response from server.");
         }
 
         // Close the connection
         close_connection(sock);
     }
     catch (const std::exception& e) {
-        cerr << "Client " << client_id << " encountered an error: " << e.what() << endl;
+        display_err("Client encountered an error: " + string(e.what()));
     }
 }
 

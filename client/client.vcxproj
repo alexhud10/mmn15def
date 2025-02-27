@@ -134,12 +134,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="client.h" />
+    <ClInclude Include="client_ui.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cryptoManager.h" />
     <ClInclude Include="network.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />
+    <ClCompile Include="client_ui.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="network.cpp" />
   </ItemGroup>
