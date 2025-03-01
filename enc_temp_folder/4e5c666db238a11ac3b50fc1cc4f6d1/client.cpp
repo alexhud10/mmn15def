@@ -15,33 +15,6 @@
 
 using namespace std;  
 
-// Function to handle the different requests based on user input
-void handle_request(int option, tcp::socket& socket) {
-    if (option == 110) {  // Register user
-        string username;
-        cout << "Enter username for registration: ";
-        getline(cin, username);
-
-        // Create binary packet for registration request
-        vector<char> packet = create_registration_packet(username);
-        send_binary_data(socket, packet);  // Send registration request to server
-    }
-    else if (option == 150) {  // Send message
-        string recipient, message;
-        cout << "Enter recipient's username: ";
-        getline(cin, recipient);
-        cout << "Enter your message: ";
-        getline(cin, message);
-
-        // Create binary packet for sending message
-        vector<char> packet = create_message_packet(recipient, message);
-        send_binary_data(socket, packet);  // Send message to server
-    }
-    else {
-        display_err("Invalid option selected.");
-    }
-}
-
 void send_message(tcp::socket& socket, const string& message) {
     send_data(socket, message);  // function from network.cpp
 }

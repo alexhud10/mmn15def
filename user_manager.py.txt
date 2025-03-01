@@ -1,0 +1,51 @@
+user_manager.py: 
+
+import uuid
+
+class UserManager:
+    def __init__(self):
+        self.users = {}  # Store users in a dictionary
+
+    def register_user(self, user_id):
+        # For now, only store the user_id
+        user = {'user_id': user_id}
+        self.users[user_id] = user
+        print(f"User {user_id} registered.")
+        
+    def authenticate_user(self, user_id):
+        # Check if user exists
+        if user_id in self.users:
+            print(f"User {user_id} authenticated.")
+            return True
+        else:
+            print(f"User {user_id} not found.")
+            return False
+
+
+
+user_storage.py
+
+import json
+
+class UserStorage:
+    def __init__(self, filename="my.info"):
+        self.filename = filename
+
+    def save_user_data(self, user_id):
+        # Save the user ID (later we will add more info like UUID, username, keys)
+        user_data = {'user_id': user_id}
+        with open(self.filename, 'a') as f:
+            json.dump(user_data, f)
+            f.write("\n")  # Add a newline for each user
+
+    def load_user_data(self):
+        # Load all user data from the file
+        users = []
+        try:
+            with open(self.filename, 'r') as f:
+                for line in f:
+                    user = json.loads(line.strip())
+                    users.append(user)
+        except FileNotFoundError:
+            print(f"{self.filename} not found, starting with an empty list.")
+        return users

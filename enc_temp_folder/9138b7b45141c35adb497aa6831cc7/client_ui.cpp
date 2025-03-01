@@ -7,14 +7,10 @@ using namespace std;
 
 // Function to get user input (message to send)
 string get_user_input() {
-    int option;
-    cout << "Choose an option:" << endl;
-    cout << "110 - Register User" << endl;
-    cout << "150 - Send Message" << endl;
-    cout << "Enter your choice: ";
-    cin >> option;
-    cin.ignore();  // To discard the leftover newline character
-    return option;
+    string message;
+    cout << "Enter your message: ";
+    getline(cin, message);  // Get the entire message input from the user
+    return message;
 }
 
 // Function to display the message received from the server

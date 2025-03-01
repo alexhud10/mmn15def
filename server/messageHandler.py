@@ -2,6 +2,7 @@
 # handle clients messages
 import socket
 
+# receiving messages from client
 def handle_client(conn):
     try:
         # Receive data from the client
