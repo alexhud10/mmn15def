@@ -32,12 +32,10 @@ private:
 void connect_to_server(tcp::socket& socket, const string& server_ip, int server_port);
 
 // Function to send a message to the server
-void send_data(tcp::socket& socket, const string& message);
+//void send_data(tcp::socket& socket, const string& message);
 
 // Function to receive a message from the server
-string receive_data();
+//string receive_data();
 
-// Function to close the connection
-void close_connection();
 
 #endif  // CLIENT_H

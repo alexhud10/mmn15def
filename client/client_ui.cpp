@@ -6,7 +6,7 @@
 using namespace std;
 
 // Function to get user input (message to send)
-string get_user_input() {
+int get_user_input() {
     int option;
     cout << "Choose an option:" << endl;
     cout << "110 - Register User" << endl;

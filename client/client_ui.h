@@ -4,11 +4,12 @@
 #define CLIENT_UI_H
 
 #include <string>
+#include <iostream>
 
 using namespace std;
 
 //get users input
-string get_user_input();
+int get_user_input();
 
 //display messages receved from server
 void display_message(const string& message);
