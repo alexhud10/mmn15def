@@ -39,6 +39,17 @@ struct MessagePayload {
     std::string content;           // Message content
 };
 
+struct ResponseHeader {
+    uint8_t  version;
+    uint16_t code;          // e.g. 2100
+    uint32_t payload_size;  // size of the payload
+};
+
+struct Response {
+    Header header;
+    std::vector<uint8_t> payload;
+};
+
 
 std::vector<uint8_t> header_to_binary(const Header& header);
 
@@ -49,6 +60,8 @@ std::vector<uint8_t> message_payload_to_binary(const MessagePayload& payload);
 std::vector<uint8_t> create_registration_packet(const std::string& username, const std::string& public_key);
 
 std::vector<uint8_t> create_message_packet(const std::string& recipient, const std::string& message);
+
+Response readResponse(tcp::socket& socket);
 
 // Function to establish a connection to the server
 void connect_to_server(tcp::socket& socket, const std::string& server_ip, int server_port);

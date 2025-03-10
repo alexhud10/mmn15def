@@ -1,8 +1,9 @@
 # message_handler.py
-# handle clients messages
+# handle clients messages in the high level
+# works in parallel with protocolUtils that works on network layer
 
 import uuid
-from protocolUtils import decode_packet, create_response_packet
+from protocolUtils import *
 
 # decode packet with header and pay load
 # header values always the same
@@ -20,16 +21,12 @@ def process_registration(payload, conn, user_storage, user_manager):
     """
     if len(payload) < 1:
         print("Error: Payload too short for registration.")
-        response = create_response_packet("Invalid payload", success=False)
-        conn.sendall(response)
-        return
+        return False, "Invalid payload"
 
     name_length = payload[0]
     if len(payload) < 1 + name_length + 1:
         print("Error: Payload missing username or public key length.")
-        response = create_response_packet("Invalid payload", success=False)
-        conn.sendall(response)
-        return
+        return False, "Invalid payload"
 
     username = payload[1:1 + name_length].decode('utf-8')
     pk_index = 1 + name_length
@@ -44,6 +41,7 @@ def process_registration(payload, conn, user_storage, user_manager):
     if user_storage.username_exists(username):
         print(f"Error: Username '{username}' already exists.")
         response = create_response_packet("Username already exists", success=False)
+        return False, "Username already exists"
     else:
         user_id = str(uuid.uuid4())
         user_data = {
@@ -53,8 +51,7 @@ def process_registration(payload, conn, user_storage, user_manager):
         }
         user_storage.save_user_data(user_data)
         print(f"User '{username}' registered with ID {user_id}.")
-        response = create_response_packet(user_id, success=True)
-    conn.sendall(response)
+        return True, user_id
 
 
 def process_request(header, payload, conn, user_storage, user_manager):
@@ -63,11 +60,31 @@ def process_request(header, payload, conn, user_storage, user_manager):
     """
     request_code = header.get("request_code")
     if request_code == 600:
-        process_registration(payload, conn, user_storage, user_manager)
+        success, response_data  = process_registration(payload, conn, user_storage, user_manager)
+        if success:
+            # Registration success; use code 2100 and data is client_id.
+            response_packet = build_response(1, 2100, response_data)
     else:
         print(f"Unknown request code: {request_code}")
-        response = create_response_packet("Unknown request", success=False)
-        conn.sendall(response)
+
+
+
+def build_response(version, code, data=None):
+    """
+    Given a response code and optional data, build the appropriate payload
+    and then create the full response packet (header + payload).
+    """
+    if code == 2100:
+        # Registration success
+        # 'data' is expected to be the client_id (string or bytes)
+        payload = build_payload_registration_success(data)
+    else:
+        # Default or unknown code
+        # Could just return an empty payload or handle other codes
+        payload = b''
+
+    return create_response_packet(version, code, payload)
+
 
 # receiving messages from client
 def handle_client(conn, user_storage, user_manager):

@@ -19,7 +19,9 @@ using boost::asio::ip::tcp;
 // Declare the io_context and socket as global
 boost::asio::io_context io_context; 
 
-
+//================================
+//requests to server
+//================================
 
 vector<uint8_t> header_to_binary(const Header& header) {
     vector<uint8_t> binary_data;
@@ -127,6 +129,46 @@ vector<uint8_t> create_message_packet(const string& recipient, const string& mes
     return packet;
 }
 
+//===========================
+//response from server
+//===========================
+
+Response readResponse(tcp::socket& socket) {
+    // 1) First, read exactly the size of the Header (which is 16+1+2+4 = 23 bytes).
+    //    But let's store it in a temporary buffer for correct endianness conversion.
+    vector<uint8_t> headerBuf(sizeof(Header));
+    boost::asio::read(socket, boost::asio::buffer(headerBuf.data(), headerBuf.size()));
+
+    // 2) Copy the raw bytes into a Header struct
+    Header rawHeader;
+    memcpy(&rawHeader, headerBuf.data(), sizeof(Header)); //destination, source, number of bytes to copy 
+
+    // 3) Convert from network byte order to host byte order where needed.
+    //    client_id is just 16 bytes, no endianness. version is 1 byte, also no endianness.
+    rawHeader.code = ntohs(rawHeader.code);
+    rawHeader.payload_size = ntohl(rawHeader.payload_size);
+
+    // 4) Now read the payload (if any)
+    std::vector<uint8_t> payload;
+    if (rawHeader.payload_size > 0) {
+        payload.resize(rawHeader.payload_size);
+        boost::asio::read(socket, boost::asio::buffer(payload.data(), payload.size()));
+    }
+
+    // 5) Construct a DecodedResponse
+    Response resp;
+    resp.header = rawHeader;
+    resp.payload = std::move(payload);
+    return resp;
+}
+
+
+
+
+
+//===========================
+// connection to server
+//===========================
 
 void connect_to_server(tcp::socket& socket, const string& server_ip, int server_port) {
     try {

@@ -1,6 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
-
+#pragma once
 #include <boost/asio.hpp>  
 #include <string>
 #include "config.h"
@@ -28,14 +28,20 @@ private:
     int serverPort;
 };
 
-// Function to connect to the server
-void connect_to_server(tcp::socket& socket, const string& server_ip, int server_port);
+class ClientSession {
+public:
+    std::string username; // Holds the username entered by the user.
+    tcp::socket socket;
 
-// Function to send a message to the server
-//void send_data(tcp::socket& socket, const string& message);
+    // Constructor: initializes the socket with the io_context.
+    ClientSession(boost::asio::io_context& io_context)
+        : socket(io_context) {}
+};
 
-// Function to receive a message from the server
-//string receive_data();
+void handle_request(int option, tcp::socket& socket);
 
+void handleResponse(const Response& resp);
+
+void client_function(const string& server_ip, int server_port);
 
 #endif  // CLIENT_H

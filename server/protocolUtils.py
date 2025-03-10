@@ -2,7 +2,7 @@
 
 import struct
 
-
+# decode packer arrived from client
 def decode_packet(data):
     """
     Decodes a packet that contains:
@@ -31,24 +31,51 @@ def decode_packet(data):
     payload = data[HEADER_SIZE:HEADER_SIZE + payload_size]
     return header, payload
 
-# decode for each payload
 
+'''sending packets to client'''
+# header to binary
+def create_response_header(version, code, payload_size):
+    """
+    Build the 7-byte header in network byte order:
+      - version (1 byte)
+      - code (2 bytes)
+      - payload_size (4 bytes)
+    """
+    # "!B H I" means:
+    #  - ! : network (big-endian) byte order
+    #  - B : 1-byte unsigned char
+    #  - H : 2-byte unsigned short
+    #  - I : 4-byte unsigned int
+    return struct.pack("!B H I", version, code, payload_size)
 
-# Helper: create a response packet.
-# Protocol for the response packet:
-#   1 byte: status (1 for success, 0 for error)
-#   1 byte: length of the following string (user ID or error message)
-#   N bytes: the actual string (UTF-8 encoded)
-def create_response_packet(message, success=True):
+# header and payload into packet
+def create_response_packet(version, code, payload):
     """
-    Creates a response packet containing:
-      - 1 byte: status (1 for success, 0 for error)
-      - 1 byte: message length
-      - N bytes: UTF-8 encoded message
+    Create a full response packet = header + payload.
+    - version (1 byte)
+    - code (2 bytes)
+    - payload_size (4 bytes)
+    - payload (variable length)
     """
-    msg_bytes = message.encode('utf-8')
-    msg_length = len(msg_bytes)
-    status = 1 if success else 0
-    # Pack as: status (1 byte), length (1 byte), then the message
-    packet = struct.pack("BB", status, msg_length) + msg_bytes
-    return packet
+    payload_size = len(payload)
+    header = create_response_header(version, code, payload_size)
+    return header + payload
+
+# payload builder for registration (code 2100)
+def build_payload_registration_success(client_id):
+    """
+    The spec says that on registration success (code 2100),
+    the payload contains the 16-byte client ID.
+    If 'client_id' is already a 16-byte value, just return it.
+    Otherwise, ensure it's exactly 16 bytes (e.g., pad or truncate).
+    """
+    # If you store client_id as a 16-byte array, just return it:
+    if isinstance(client_id, bytes) and len(client_id) == 16:
+        return client_id
+
+    # Otherwise, if it's a string and you need to encode:
+    client_id_bytes = client_id.encode('utf-8')  # or your chosen encoding
+    # Ensure exactly 16 bytes (pad or truncate as needed):
+    client_id_bytes = client_id_bytes[:16].ljust(16, b'\0')
+    return client_id_bytes
+
