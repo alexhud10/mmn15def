@@ -43,7 +43,7 @@ def process_registration(payload, conn, user_storage, user_manager):
         response = create_response_packet("Username already exists", success=False)
         return False, "Username already exists"
     else:
-        user_id = str(uuid.uuid4())
+        user_id = uuid.uuid4().hex[:16]
         user_data = {
             'user_id': user_id,
             'username': username,
@@ -54,21 +54,7 @@ def process_registration(payload, conn, user_storage, user_manager):
         return True, user_id
 
 
-def process_request(header, payload, conn, user_storage, user_manager):
-    """
-    Dispatches processing based on the request code in the header.
-    """
-    request_code = header.get("request_code")
-    if request_code == 600:
-        success, response_data  = process_registration(payload, conn, user_storage, user_manager)
-        if success:
-            # Registration success; use code 2100 and data is client_id.
-            response_packet = build_response(1, 2100, response_data)
-    else:
-        print(f"Unknown request code: {request_code}")
-
-
-
+# generate payload for each response code (2xxx)
 def build_response(version, code, data=None):
     """
     Given a response code and optional data, build the appropriate payload
@@ -84,6 +70,21 @@ def build_response(version, code, data=None):
         payload = b''
 
     return create_response_packet(version, code, payload)
+
+
+def send_response(conn, response_packet):
+    """
+    Sends the complete response packet to the client over the connection.
+
+    Parameters:
+      - conn: a socket object (e.g., from the socket module) already connected to the client.
+      - response_packet: a bytes object that represents the full response (header + payload).
+    """
+    try:
+        conn.sendall(response_packet)
+        print("Response successfully sent to client.")
+    except Exception as e:
+        print("Error sending response:", e)
 
 
 # receiving messages from client
@@ -108,3 +109,19 @@ def handle_client(conn, user_storage, user_manager):
 
     finally:
         conn.close()
+
+
+def process_request(header, payload, conn, user_storage, user_manager):
+    """
+    Dispatches processing based on the request code in the header.
+    """
+    request_code = header.get("request_code")
+    if request_code == 600:
+        success, response_data = process_registration(payload, conn, user_storage, user_manager)
+        if success:
+            # Registration success; use code 2100 and data is client_id.
+            response_packet = build_response(1, 2100, response_data)
+            print("size of data sent: " + len(response_packet))
+            send_response(conn, response_packet)
+    else:
+        print(f"Unknown request code: {request_code}")

@@ -2,7 +2,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "network.h"
+//#include "network.h"
 #include <boost/asio.hpp>  
 #include <iostream>
 #include <cstring> 
@@ -39,14 +39,16 @@ struct MessagePayload {
     std::string content;           // Message content
 };
 
+#pragma pack(push, 1)
 struct ResponseHeader {
-    uint8_t  version;
-    uint16_t code;          // e.g. 2100
-    uint32_t payload_size;  // size of the payload
+    uint8_t  version;       //1 byte
+    uint16_t code;          // 2 byte
+    uint32_t payload_size;  // size of the payload - 4 byte
 };
+#pragma pack(pop)
 
 struct Response {
-    Header header;
+    ResponseHeader header;
     std::vector<uint8_t> payload;
 };
 
@@ -61,7 +63,7 @@ std::vector<uint8_t> create_registration_packet(const std::string& username, con
 
 std::vector<uint8_t> create_message_packet(const std::string& recipient, const std::string& message);
 
-Response readResponse(tcp::socket& socket);
+Response read_response(tcp::socket& socket);
 
 // Function to establish a connection to the server
 void connect_to_server(tcp::socket& socket, const std::string& server_ip, int server_port);

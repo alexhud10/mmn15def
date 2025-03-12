@@ -16,10 +16,11 @@
 
 using namespace std;  
 
-string username;
+
 // handle the different requests based on user input
 void handle_request(int option, ClientSession& session) {
     if (option == 110) {  // register user option
+        string username;
         cout << "Enter username for registration: ";
         getline(cin, session.username);
 
@@ -44,11 +45,10 @@ void handle_request(int option, ClientSession& session) {
     }
 }
 
-void handleResponse(ClientSession& session, const Response& resp) {
-    const Header& h = resp.header;
+void handle_response(ClientSession& session, const Response& resp) {
+    const ResponseHeader& h = resp.header;
 
     // For demonstration, convert client_id to hex or just print
-    // but we might not always need it for a server response.
     cout << "Version: " << (int)h.version << "\n";
     cout << "Code:    " << h.code << "\n";
     cout << "Payload: " << h.payload_size << " bytes\n";
@@ -67,7 +67,7 @@ void handleResponse(ClientSession& session, const Response& resp) {
         // Save username and client ID to "my.info"
         ofstream myInfoFile("my.info", ios::app);
         if (myInfoFile.is_open()) {
-            myInfoFile << session.username << " " << clientID << "\n";
+            myInfoFile << session.username << "\n" << clientID << "\n";
             myInfoFile.close();
             cout << "Saved registration info to my.info\n";
         }
@@ -84,7 +84,7 @@ void handleResponse(ClientSession& session, const Response& resp) {
     }
              // Add more codes (2104, etc.) as needed
     default:
-        std::cout << "Unknown response code: " << h.code << "\n";
+        cout << "Unknown response code: " << h.code << "\n";
         break;
     }
 }
@@ -100,8 +100,13 @@ void client_function(const string& server_ip, int server_port) {
 
         // Send a message
         int usr_input = get_user_input();
-        handle_request(usr_input, session.socket);
-
+        
+        handle_request(usr_input, session);
+        
+        Response resp = read_response(session.socket);
+        cout << "response from server was read ... " << "\n";
+        handle_response(session, resp);
+        cout << "response handeled successfuly " << "\n";
     }
     catch (const std::exception& e) {
         display_err("Client encountered an error: " + string(e.what()));
@@ -114,11 +119,11 @@ int main() {
 
     // initialize the config object and load server info from server.info
     config cfg;
-    cfg.loadFile("server.info");
+    cfg.load_file("server.info");
 
     // get the server IP and port from the config object
-    string server_ip = cfg.getIP();
-    int server_port = cfg.getPort();
+    string server_ip = cfg.get_ip();
+    int server_port = cfg.get_port();
 
 
     // create and launch multiple client threads

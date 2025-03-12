@@ -9,8 +9,6 @@ from userManager import UserManager
 import uuid
 
 
-
-
 def start_server(host, port):
     # initialize storage and user manager
     user_storage = UserStorage()
@@ -29,6 +27,7 @@ def start_server(host, port):
         client_thread = threading.Thread(target=handle_client, args=(conn, user_storage, user_manager))
         client_thread.start()
         print("server is ready")
+
 
 def main():
     host = "127.0.0.1" 

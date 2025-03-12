@@ -9,24 +9,24 @@ using boost::asio::ip::tcp;
 using namespace std;
 
 // Declare the configuration class to manage server IP and port
-class config {
+/*class config {
 public:
     // Constructor with default values
     config();
 
     // Method to load server information from a file
-    void loadFile(const string& filename);
+    void load_file(const string& filename);
 
     // Getter for the server IP
-    string getIP() const;
+    string get_ip() const;
 
     // Getter for the server port
-    int getPort() const;
+    int get_port() const;
 
 private:
     string serverIP;
     int serverPort;
-};
+};*/
 
 class ClientSession {
 public:
@@ -38,9 +38,9 @@ public:
         : socket(io_context) {}
 };
 
-void handle_request(int option, tcp::socket& socket);
+void handle_request(int option, ClientSession& session);
 
-void handleResponse(const Response& resp);
+void handle_response(ClientSession& session, const Response& resp);
 
 void client_function(const string& server_ip, int server_port);
 

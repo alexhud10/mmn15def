@@ -7,9 +7,9 @@
 class config {
 public:
     config();  // constructor
-    void loadFile(const std::string& filename);  // loads file with port and ip info
-    std::string getIP() const;  
-    int getPort() const;  
+    void load_file(const std::string& filename);  // loads file with port and ip info
+    std::string get_ip() const;  
+    int get_port() const;  
 
 private:
     std::string serverIP;  

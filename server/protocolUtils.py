@@ -2,6 +2,7 @@
 
 import struct
 
+
 # decode packer arrived from client
 def decode_packet(data):
     """
@@ -48,6 +49,7 @@ def create_response_header(version, code, payload_size):
     #  - I : 4-byte unsigned int
     return struct.pack("!B H I", version, code, payload_size)
 
+
 # header and payload into packet
 def create_response_packet(version, code, payload):
     """
@@ -60,6 +62,7 @@ def create_response_packet(version, code, payload):
     payload_size = len(payload)
     header = create_response_header(version, code, payload_size)
     return header + payload
+
 
 # payload builder for registration (code 2100)
 def build_payload_registration_success(client_id):

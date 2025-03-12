@@ -12,7 +12,7 @@ using namespace std;
 //constructor with default values
 config::config() : serverIP("127.0.0.1"), serverPort(1234) {}  
 
-void config::loadFile(const string& filename) {
+void config::load_file(const string& filename) {
     ifstream configFile(filename);
     if (configFile.is_open()) {
         string line;
@@ -35,12 +35,12 @@ void config::loadFile(const string& filename) {
 }
 
 // Getter for the server IP
-string config::getIP() const {
+string config::get_ip() const {
     return serverIP;
 }
 
 // Getter for the server port
-int config::getPort() const {
+int config::get_port() const {
     return serverPort;
 }
 

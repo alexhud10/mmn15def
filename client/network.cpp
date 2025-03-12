@@ -133,36 +133,32 @@ vector<uint8_t> create_message_packet(const string& recipient, const string& mes
 //response from server
 //===========================
 
-Response readResponse(tcp::socket& socket) {
-    // 1) First, read exactly the size of the Header (which is 16+1+2+4 = 23 bytes).
-    //    But let's store it in a temporary buffer for correct endianness conversion.
-    vector<uint8_t> headerBuf(sizeof(Header));
+Response read_response(tcp::socket& socket) {
+    // create buffer: read exactly the size of the Header (which is 1+2+4 = 23 bytes).
+    vector<uint8_t> headerBuf(sizeof(ResponseHeader));
     boost::asio::read(socket, boost::asio::buffer(headerBuf.data(), headerBuf.size()));
 
-    // 2) Copy the raw bytes into a Header struct
-    Header rawHeader;
-    memcpy(&rawHeader, headerBuf.data(), sizeof(Header)); //destination, source, number of bytes to copy 
+    // copy the raw bytes into a Header struct
+    ResponseHeader rawHeader;
+    memcpy(&rawHeader, headerBuf.data(), sizeof(ResponseHeader)); //destination, source, number of bytes to copy 
 
-    // 3) Convert from network byte order to host byte order where needed.
-    //    client_id is just 16 bytes, no endianness. version is 1 byte, also no endianness.
+    // convert endians
     rawHeader.code = ntohs(rawHeader.code);
     rawHeader.payload_size = ntohl(rawHeader.payload_size);
 
-    // 4) Now read the payload (if any)
+    // read the payload (if any)
     std::vector<uint8_t> payload;
     if (rawHeader.payload_size > 0) {
         payload.resize(rawHeader.payload_size);
         boost::asio::read(socket, boost::asio::buffer(payload.data(), payload.size()));
     }
 
-    // 5) Construct a DecodedResponse
+    // create response
     Response resp;
     resp.header = rawHeader;
     resp.payload = std::move(payload);
     return resp;
 }
-
-
 
 
 
@@ -172,7 +168,7 @@ Response readResponse(tcp::socket& socket) {
 
 void connect_to_server(tcp::socket& socket, const string& server_ip, int server_port) {
     try {
-        // Resolve the server address and port
+        // resolve the server address and port
         tcp::resolver resolver(io_context);
         auto endpoints = resolver.resolve(server_ip, to_string(server_port));
 
@@ -195,7 +191,7 @@ void send_data(tcp::socket& socket, const vector<uint8_t>& data) {
         cerr << "Error sending data: " << e.what() << endl;
     }
 }
-
+/*
 string receive_data(tcp::socket& socket) {
     try {
         char response[128];
@@ -207,7 +203,7 @@ string receive_data(tcp::socket& socket) {
         cerr << "Error receiving message: " << e.what() << endl;
         return "";
     }
-}
+}*/
 
 void close_connection(tcp::socket& socket) {
     socket.close();  // Close the connection after use
