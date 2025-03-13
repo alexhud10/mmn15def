@@ -30,10 +30,11 @@ private:
 
 class ClientSession {
 public:
-    std::string username; // Holds the username entered by the user.
+    std::string username; // holds the username entered by the user.
+    std::string client_id; // holds id the assigned from registration
     tcp::socket socket;
 
-    // Constructor: initializes the socket with the io_context.
+    // constructor: initializes the socket with the io_context.
     ClientSession(boost::asio::io_context& io_context)
         : socket(io_context) {}
 };

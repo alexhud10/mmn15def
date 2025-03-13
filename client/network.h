@@ -63,6 +63,8 @@ std::vector<uint8_t> create_registration_packet(const std::string& username, con
 
 std::vector<uint8_t> create_message_packet(const std::string& recipient, const std::string& message);
 
+std::vector<uint8_t> create_get_users_packet(const std::string& id);
+
 Response read_response(tcp::socket& socket);
 
 // Function to establish a connection to the server

@@ -20,7 +20,7 @@ using boost::asio::ip::tcp;
 boost::asio::io_context io_context; 
 
 //================================
-//requests to server
+//requests to server - data to binary
 //================================
 
 vector<uint8_t> header_to_binary(const Header& header) {
@@ -81,6 +81,10 @@ vector<uint8_t> message_payload_to_binary(const MessagePayload& payload) {
     return binary_data;
 }
 
+//===========================
+// requests to server - create packet for each request
+//===========================
+
 vector<uint8_t> create_registration_packet(const string& username, const std::string& public_key) {
     Header header;
     RegistrationPayload payload;
@@ -126,6 +130,27 @@ vector<uint8_t> create_message_packet(const string& recipient, const string& mes
     vector<uint8_t> payload_binary = message_payload_to_binary(payload);
 
     packet.insert(packet.end(), payload_binary.begin(), payload_binary.end());
+    return packet;
+}
+
+vector<uint8_t> create_get_users_packet(const string& id) {
+    Header header;
+    // Copy the stored client_id into the header's client_id field.
+    // For requests, your header has 16 bytes for client_id.
+    // Assume that if session.client_id is not 16 bytes, we pad or truncate accordingly.
+    string cid = id;
+    if (cid.size() < 16)
+        cid.append(16 - cid.size(), '\0');
+    else if (cid.size() > 16)
+        cid = cid.substr(0, 16);
+    memcpy(header.client_id, cid.data(), 16);
+
+    header.version = 1;
+    header.code = 601;  // get users list request code.
+    header.payload_size = 0;  // no payload.
+
+    // Build the packet from header only.
+    vector<uint8_t> packet = header_to_binary(header);
     return packet;
 }
 

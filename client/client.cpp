@@ -29,6 +29,15 @@ void handle_request(int option, ClientSession& session) {
         vector<uint8_t> packet = create_registration_packet(session.username, "");
         send_data(session.socket, packet);  // send registration request to server
     }
+    else if (option == 120) { //users list
+        if (session.client_id.empty()) {
+            cerr << "Error: Client ID is not set. Please register first.\n";
+            return;
+        }
+        vector<uint8_t> packet = create_get_users_packet(session.client_id);
+        send_data(session.socket, packet);
+
+    }
     else if (option == 150) {  // send message op
         string recipient, message;
         cout << "Enter recipient's username: ";
@@ -55,7 +64,7 @@ void handle_response(ClientSession& session, const Response& resp) {
 
     switch (h.code) {
     case 2100: { // Registration success
-        // Typically 16 bytes of new client ID in payload
+        // 16 bytes of new client ID in payload
         if (resp.payload.size() < 16) {
             cerr << "Error: incomplete client ID in payload\n";
             return;
@@ -63,8 +72,9 @@ void handle_response(ClientSession& session, const Response& resp) {
 
         string clientID(resp.payload.begin(), resp.payload.begin() + 16);
         cout << "Registration success! Client ID: " << clientID << "\n";
-
-        // Save username and client ID to "my.info"
+        // add user id to session
+        session.client_id = clientID;
+        // save username and client ID to "my.info"
         ofstream myInfoFile("my.info", ios::app);
         if (myInfoFile.is_open()) {
             myInfoFile << session.username << "\n" << clientID << "\n";

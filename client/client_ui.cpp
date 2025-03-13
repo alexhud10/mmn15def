@@ -10,7 +10,8 @@ int get_user_input() {
     int option;
     cout << "Choose an option:" << endl;
     cout << "110 - Register User" << endl;
-    cout << "150 - Send Message" << endl;
+    cout << "120 - Request for clients list" << endl;
+    cout << "150 - Send a text message" << endl;
     cout << "Enter your choice: ";
     cin >> option;
     cin.ignore();  // To discard the leftover newline character
