@@ -87,6 +87,32 @@ void handle_response(ClientSession& session, const Response& resp) {
         break;
     }
     case 2101: {
+        // Each user record is 16 bytes for user_id + 255 bytes for username = 271 bytes.
+        size_t record_size = 16 + 255; // 271 bytes per record.
+        if (resp.payload.size() % record_size != 0) {
+            cerr << "Error: Payload size is not a multiple of " << record_size << " bytes.\n";
+            return;
+        }
+        size_t num_users = resp.payload.size() / record_size;
+        vector<string> user_list;
+        for (size_t i = 0; i < num_users; i++) {
+            size_t offset = i * record_size;
+            // Skip the first 16 bytes (user ID), and read the next 255 bytes for username.
+            string username(resp.payload.begin() + offset + 16,
+                resp.payload.begin() + offset + record_size);
+            // Trim off trailing null characters.
+            size_t null_pos = username.find('\0');
+            if (null_pos != string::npos) {
+                username = username.substr(0, null_pos);
+            }
+            user_list.push_back(username);
+        }
+        // Call a UI function to display the user list.
+        display_user_list(user_list);  // Assuming this function is defined in your client UI module.
+        break;
+    }
+    }
+    case 2106: {
         // Possibly an error message in text form
         string errorMsg(resp.payload.begin(), resp.payload.end());
         cout << "Registration failed: " << errorMsg << "\n";

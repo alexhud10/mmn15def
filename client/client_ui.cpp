@@ -27,3 +27,10 @@ void display_message(const string& message) {
 void display_err(const string& error_message) {
     cerr << "Error: " << error_message << endl;
 }
+
+void display_user_list(const std::vector<std::string>& user_list) {
+    cout << "User List:" << std::endl;
+    for (const auto& user : user_list) {
+        cout << " - " << user << std::endl;
+    }
+}

@@ -63,6 +63,12 @@ def create_response_packet(version, code, payload):
     header = create_response_header(version, code, payload_size)
     return header + payload
 
+'''
+==============================
+generate payload for each request
+=============================
+'''
+
 
 # payload builder for registration (code 2100)
 def build_payload_registration_success(client_id):
@@ -81,4 +87,35 @@ def build_payload_registration_success(client_id):
     # Ensure exactly 16 bytes (pad or truncate as needed):
     client_id_bytes = client_id_bytes[:16].ljust(16, b'\0')
     return client_id_bytes
+
+
+def build_users_payload(users_list):
+    """
+    given a list of user dictionaries (with 'user_id' and 'username'),
+    builds a binary payload where each user record is:
+      - 16 bytes for the user_id (ASCII)
+      - 255 bytes for the username (ASCII)
+
+    returns a bytes object representing the payload.
+    """
+    payload_bytes = bytearray()
+
+    for user in users_list:
+        # Process the user ID (16 bytes)
+        uid = user.get("user_id", "")
+        uid_bytes = uid.encode("ascii", errors="ignore")[:16]
+        uid_bytes = uid_bytes.ljust(16, b'\0')
+
+        # Process the username (255 bytes)
+        uname = user.get("username", "")
+        # We use 254 bytes for characters then add a null terminator (or directly slice 255 if you include it)
+        uname_bytes = uname.encode("ascii", errors="ignore")[:254]
+        uname_bytes += b'\0'
+        uname_bytes = uname_bytes.ljust(255, b'\0')
+
+        # Append the two fields to the payload
+        payload_bytes.extend(uid_bytes)
+        payload_bytes.extend(uname_bytes)
+
+    return bytes(payload_bytes)
 

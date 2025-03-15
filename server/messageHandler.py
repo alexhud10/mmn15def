@@ -9,7 +9,14 @@ from protocolUtils import *
 # header values always the same
 # payload is different for each request
 
+'''
+==============================
+process for each request (registration, users list)
+=============================
+'''
 
+
+# request 600 for registration
 def process_registration(payload, conn, user_storage, user_manager):
     """
     Processes a registration request (request code 600).
@@ -54,6 +61,29 @@ def process_registration(payload, conn, user_storage, user_manager):
         return True, user_id
 
 
+# function for request 601 to get users list
+def get_users(user_storage, user_id):
+    """
+    Retrieves all users from user_storage, excluding the requester,
+    """
+    all_users = user_storage.load_user_data()  # user list contain user dict info
+    users_list = []
+    for user in all_users:
+        if user.get("user_id") != user_id:
+            users_list.append({
+                "user_id": user.get("user_id", ""),
+                "username": user.get("username", "")
+            })
+    return users_list
+
+
+'''
+==============================
+handling requests
+=============================
+'''
+
+
 # generate payload for each response code (2xxx)
 def build_response(version, code, data=None):
     """
@@ -64,12 +94,14 @@ def build_response(version, code, data=None):
         # Registration success
         # 'data' is expected to be the client_id (string or bytes)
         payload = build_payload_registration_success(data)
+    if code == 2101:
+        payload = build_users_payload(data)
     else:
         # Default or unknown code
         # Could just return an empty payload or handle other codes
         payload = b''
 
-    return create_response_packet(version, code, payload)
+    return create_response_packet(version, code, payload)  # creates header and payload packet
 
 
 def send_response(conn, response_packet):
@@ -123,5 +155,11 @@ def process_request(header, payload, conn, user_storage, user_manager):
             response_packet = build_response(1, 2100, response_data)
             print("size of data sent: " + len(response_packet))
             send_response(conn, response_packet)
+    if request_code == 601:
+        user_id = header.get("client_id")
+        response_data = get_users(user_storage, user_id)
+        response_packet = build_response(1, 2101, response_data)  # build header and payload to binary, generate packet
+        print("size of data sent: " + len(response_packet))
+        send_response(conn, response_packet)
     else:
         print(f"Unknown request code: {request_code}")
