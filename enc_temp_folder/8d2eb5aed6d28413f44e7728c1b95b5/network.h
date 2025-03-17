@@ -31,12 +31,13 @@ struct RegistrationPayload {
 
 //code 603 - send message 
 struct MessagePayload {
-    uint8_t recipient_id[16];  // recipient 
-    uint8_t message_type;     // 1 byte
-    uint32_t content_size;         // 4 bytes
-    std::string message_content;   // message content
+    uint8_t recipient_length;  // Length of the recipient's name
+    std::string recipient;     // Recipient's name
+    uint8_t message_type_length;  // Length of the message type
+    std::string message_type;     // Type of the message (e.g., "text")
+    uint32_t content_size;         // Size of the message content
+    std::string content;           // Message content
 };
-
 
 #pragma pack(push, 1)
 struct ResponseHeader {
