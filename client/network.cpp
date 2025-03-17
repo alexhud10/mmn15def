@@ -174,11 +174,15 @@ Response read_response(tcp::socket& socket) {
     // read the payload (if any)
     std::vector<uint8_t> payload;
     if (rawHeader.payload_size > 0) {
+        cout << "payload is greater than 0" << "\n";
         payload.resize(rawHeader.payload_size);
         boost::asio::read(socket, boost::asio::buffer(payload.data(), payload.size()));
     }
+    else {
+        cout << "payload is size = 0" << "\n";
+    }
 
-    // create response
+    // create response - raw header and payload
     Response resp;
     resp.header = rawHeader;
     resp.payload = std::move(payload);

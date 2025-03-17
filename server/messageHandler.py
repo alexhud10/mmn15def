@@ -69,6 +69,7 @@ def get_users(user_storage, user_id):
     all_users = user_storage.load_user_data()  # user list contain user dict info
     users_list = []
     for user in all_users:
+        print(user)
         if user.get("user_id") != user_id:
             users_list.append({
                 "user_id": user.get("user_id", ""),
@@ -94,7 +95,7 @@ def build_response(version, code, data=None):
         # Registration success
         # 'data' is expected to be the client_id (string or bytes)
         payload = build_payload_registration_success(data)
-    if code == 2101:
+    elif code == 2101:
         payload = build_users_payload(data)
     else:
         # Default or unknown code
@@ -153,13 +154,15 @@ def process_request(header, payload, conn, user_storage, user_manager):
         if success:
             # Registration success; use code 2100 and data is client_id.
             response_packet = build_response(1, 2100, response_data)
-            print("size of data sent: " + len(response_packet))
+            print("size of data sent: " + str(len(response_packet)))
             send_response(conn, response_packet)
-    if request_code == 601:
-        user_id = header.get("client_id")
+    elif request_code == 601:
+        user_id = header.get("client_id", "").strip()
+        user_id = bytes.fromhex(user_id).decode('ascii')
+        print('server getting user id for user: ' + user_id)
         response_data = get_users(user_storage, user_id)
         response_packet = build_response(1, 2101, response_data)  # build header and payload to binary, generate packet
-        print("size of data sent: " + len(response_packet))
+        print("size of data sent: " + str(len(response_packet)))
         send_response(conn, response_packet)
     else:
         print(f"Unknown request code: {request_code}")

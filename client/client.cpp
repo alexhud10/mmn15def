@@ -13,6 +13,8 @@
 #include <vector>
 #include "client_ui.h" 
 #include <fstream>
+#include <functional>
+#include <thread>
 
 using namespace std;  
 
@@ -54,6 +56,7 @@ void handle_request(int option, ClientSession& session) {
     }
 }
 
+// getting response(raw header and payload) from read_response function and handle it
 void handle_response(ClientSession& session, const Response& resp) {
     const ResponseHeader& h = resp.header;
 
@@ -79,7 +82,7 @@ void handle_response(ClientSession& session, const Response& resp) {
         if (myInfoFile.is_open()) {
             myInfoFile << session.username << "\n" << clientID << "\n";
             myInfoFile.close();
-            cout << "Saved registration info to my.info\n";
+            cout << "Saved registration info to my.info with id " << session.client_id << "\n";
         }
         else {
             cerr << "Error: Could not open my.info for writing.\n";
@@ -108,9 +111,9 @@ void handle_response(ClientSession& session, const Response& resp) {
             user_list.push_back(username);
         }
         // Call a UI function to display the user list.
+        cout << "for user: " << session.client_id << " display users list" << "\n";
         display_user_list(user_list);  // Assuming this function is defined in your client UI module.
         break;
-    }
     }
     case 2106: {
         // Possibly an error message in text form
@@ -127,22 +130,25 @@ void handle_response(ClientSession& session, const Response& resp) {
 
 
 //sending input and receiving data from user
-void client_function(const string& server_ip, int server_port) {
+void client_function(const string& server_ip, int server_port, ClientSession &session) {
     try {
-        boost::asio::io_context io_context;  // each client gets its own io_context
-        ClientSession session(io_context);  // each client gets its own socket
         
-        connect_to_server(session.socket, server_ip, server_port);
+        while (true) {
+            /*
+            boost::asio::io_context io_context;  // each client gets its own io_context
+            ClientSession session(io_context);  // each client gets its own socket
+            */
+            connect_to_server(session.socket, server_ip, server_port);
+            // Send a message
+            int usr_input = get_user_input();
 
-        // Send a message
-        int usr_input = get_user_input();
-        
-        handle_request(usr_input, session);
-        
-        Response resp = read_response(session.socket);
-        cout << "response from server was read ... " << "\n";
-        handle_response(session, resp);
-        cout << "response handeled successfuly " << "\n";
+            handle_request(usr_input, session);
+
+            Response resp = read_response(session.socket);
+            cout << "response from server was read ... " << "\n";
+            handle_response(session, resp);
+            cout << "response handled successfuly " << "\n";
+        }
     }
     catch (const std::exception& e) {
         display_err("Client encountered an error: " + string(e.what()));
@@ -165,7 +171,12 @@ int main() {
     // create and launch multiple client threads
     vector<thread> client_threads;
 
-    client_threads.push_back(thread(client_function, server_ip, server_port));
+    boost::asio::io_context io_context;  // each client gets its own io_context
+    ClientSession session(io_context);  // each client gets its own socket
+
+    //client_threads.push_back(thread(client_function, server_ip, server_port, std::ref(session)));
+    client_threads.push_back(std::thread([&]() {client_function(server_ip, server_port, session);
+        }));
 
     // wait for all client threads to finish
     for (auto& t : client_threads) {

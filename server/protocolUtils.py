@@ -2,8 +2,7 @@
 
 import struct
 
-
-# decode packer arrived from client
+# decode packet arrived from client
 def decode_packet(data):
     """
     Decodes a packet that contains:

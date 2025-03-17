@@ -2,11 +2,10 @@
 import socket
 import threading
 from messageHandler import handle_client  # Assuming handle_client is defined elsewhere
-from config import get_port # config is a file, get_port is the func we will use or can do * for getting all func
-import struct
+from config import get_port  # config is a file, get_port is the func we will use or can do * for getting all func
 from userStorage import UserStorage
 from userManager import UserManager
-import uuid
+
 
 
 def start_server(host, port):
