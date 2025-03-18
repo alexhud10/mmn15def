@@ -26,17 +26,17 @@ boost::asio::io_context io_context;
 vector<uint8_t> header_to_binary(const Header& header) {
     vector<uint8_t> binary_data;
     //manually placing into big endian order
-    // Add client ID
+    // add client ID
     binary_data.insert(binary_data.end(), begin(header.client_id), end(header.client_id));
 
-    // Add version
+    // add version
     binary_data.push_back(header.version);
 
-    // Add code (2 bytes)
+    // add code (2 bytes)
     binary_data.push_back((header.code >> 8) & 0xFF);  // High byte
     binary_data.push_back(header.code & 0xFF);         // Low byte
 
-    // Add payload size (4 bytes)
+    // add payload size (4 bytes)
     for (int i = 3; i >= 0; --i) {
         binary_data.push_back((header.payload_size >> (i * 8)) & 0xFF);
     }
@@ -48,11 +48,11 @@ vector<uint8_t> header_to_binary(const Header& header) {
 vector<uint8_t> registration_payload_to_binary(const RegistrationPayload& payload) {
     vector<uint8_t> binary_data;
 
-    // Add name length and name
+    //add name length and name
     binary_data.push_back(payload.name_length);
     binary_data.insert(binary_data.end(), payload.name.begin(), payload.name.end());
 
-    // Add public key length and public key
+    // add public key length and public key
     binary_data.push_back(payload.public_key_length);
     binary_data.insert(binary_data.end(), payload.public_key.begin(), payload.public_key.end());
 
@@ -61,22 +61,24 @@ vector<uint8_t> registration_payload_to_binary(const RegistrationPayload& payloa
 
 vector<uint8_t> message_payload_to_binary(const MessagePayload& payload) {
     vector<uint8_t> binary_data;
+    // payload: recipient id, message type, content size, message
+    
+    // append recipient_id (16 bytes)
+    binary_data.insert(binary_data.end(), payload.recipient_id, payload.recipient_id + 16);
 
-    // Add recipient length and recipient name
-    binary_data.push_back(payload.recipient_length);
-    binary_data.insert(binary_data.end(), payload.recipient.begin(), payload.recipient.end());
+    // append message_type (1 byte)
+    binary_data.push_back(payload.message_type);
 
-    // Add message type length and message type
-    binary_data.push_back(payload.message_type_length);
-    binary_data.insert(binary_data.end(), payload.message_type.begin(), payload.message_type.end());
+    // append content_size (4 bytes) in network byte order.
+    // Convert content_size to network byte order.
+    uint32_t cs_net = htonl(payload.content_size);
+    binary_data.push_back((cs_net >> 24) & 0xFF);
+    binary_data.push_back((cs_net >> 16) & 0xFF);
+    binary_data.push_back((cs_net >> 8) & 0xFF);
+    binary_data.push_back(cs_net & 0xFF);
 
-    // Add content size (4 bytes)
-    for (int i = 3; i >= 0; --i) {
-        binary_data.push_back((payload.content_size >> (i * 8)) & 0xFF);
-    }
-
-    // Add message content
-    binary_data.insert(binary_data.end(), payload.content.begin(), payload.content.end());
+    // append message content.
+    binary_data.insert(binary_data.end(), payload.message_content.begin(), payload.message_content.end());
 
     return binary_data;
 }
@@ -111,23 +113,27 @@ vector<uint8_t> create_registration_packet(const string& username, const std::st
     return packet;
 }
 
-vector<uint8_t> create_message_packet(const string& recipient, const string& message) {
+vector<uint8_t> create_message_packet(const string& sender_id, const string& recipient, const string& message) {
     Header header;
     MessagePayload payload;
+    string cid = sender_id;
+    string rid = recipient;
 
     header.version = 1;
-    header.code = 603;  // Message request code
-    header.payload_size = sizeof(payload.recipient_length) + recipient.size() + sizeof(payload.message_type_length) + payload.message_type.size() + sizeof(payload.content_size) + message.size();
+    header.code = 603;  
+    memcpy(header.client_id, cid.data(), 16);
 
-    payload.recipient = recipient;
-    payload.recipient_length = recipient.size();
-    payload.message_type = "text";  // Example: Message type
-    payload.message_type_length = payload.message_type.size();
-    payload.content = message;
+    payload.message_type = 3;  
+    payload.message_content = message;
     payload.content_size = message.size();
+    memcpy(payload.recipient_id, rid.data(), 16);
+
+    
+    vector<uint8_t> payload_binary = message_payload_to_binary(payload);
+
+    header.payload_size = payload_binary.size();
 
     vector<uint8_t> packet = header_to_binary(header);
-    vector<uint8_t> payload_binary = message_payload_to_binary(payload);
 
     packet.insert(packet.end(), payload_binary.begin(), payload_binary.end());
     return packet;

@@ -7,7 +7,6 @@ from userStorage import UserStorage
 from userManager import UserManager
 
 
-
 def start_server(host, port):
     # initialize storage and user manager
     user_storage = UserStorage()
