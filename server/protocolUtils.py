@@ -3,11 +3,14 @@
 import struct
 import random
 from userManager import *
+from message_storage import *
 '''
 ===================================
 decode packet arrived from client
 ===================================
 '''
+
+
 def decode_packet(data):
     """
     Decodes a packet that contains:
@@ -35,11 +38,15 @@ def decode_packet(data):
     }
     payload = data[header_size:header_size + payload_size]
     return header, payload
+
+
 '''
 ===================================
 processes for each request - includes payload decoding
 ===================================
 '''
+
+
 # request 600 for registration
 def process_registration(payload, user_storage, user_manager):
     """
@@ -73,7 +80,8 @@ def process_registration(payload, user_storage, user_manager):
         print(f"Error: Username '{username}' already exists.")
         return False, "Username already exists"
     else:
-        user_manager.register_user(username, public_key)
+        return user_manager.register_user(username, public_key)
+
 
 def process_message(user_id, payload):
 
@@ -86,31 +94,36 @@ def process_message(user_id, payload):
       - 4 bytes: Content size (big-endian)
       - n bytes: Message Content (UTF-8 encoded)
     """
+    try:
+        print(f"Processing message from {user_id}, payload length: {len(payload)}")
+        print(f"Payload bytes: {payload.hex()}")
+        # Check that the payload is at least 21 bytes (16+1+4)
+        if len(payload) < 21:
+            raise ValueError("Payload too short for processing message.")
 
-    # Check that the payload is at least 21 bytes (16+1+4)
-    if len(payload) < 21:
-        raise ValueError("Payload too short for processing message.")
+        # Extract recipient ID (first 16 bytes) and convert to ASCII, stripping trailing nulls.
+        recipient_id_bytes = payload[:16]
+        recipient_id = recipient_id_bytes.decode('ascii').rstrip('\0')
 
-    # Extract recipient ID (first 16 bytes) and convert to ASCII, stripping trailing nulls.
-    recipient_id_bytes = payload[:16]
-    recipient_id = recipient_id_bytes.decode('ascii').rstrip('\0')
+        # Extract the message type (1 byte at index 16)
+        message_type = payload[16]
 
-    # Extract the message type (1 byte at index 16)
-    message_type = payload[16]
+        # Extract content size from the next 4 bytes (big-endian)
+        content_size = int.from_bytes(payload[17:21], byteorder='big')
+        print(f"Parsed content_size: {content_size}")
+        # Ensure the payload contains the expected number of bytes for the message content.
+        if len(payload) < 21 + content_size:
+            raise ValueError("Incomplete payload: expected {} bytes of content, but got {}".format(21+content_size, len(payload)))
 
-    # Extract content size from the next 4 bytes (big-endian)
-    content_size = int.from_bytes(payload[17:21], byteorder='big')
+        # Extract the message content (starting at byte 21)
+        message_content_bytes = payload[21:21+content_size]
+        message_content = message_content_bytes.decode('utf-8')
 
-    # Ensure the payload contains the expected number of bytes for the message content.
-    if len(payload) < 21 + content_size:
-        raise ValueError("Incomplete payload: expected {} bytes of content, but got {}".format(21+content_size, len(payload)))
-
-    # Extract the message content (starting at byte 21)
-    message_content_bytes = payload[21:21+content_size]
-    message_content = message_content_bytes.decode('utf-8')
-
-    # Return the relevant values.
-    return recipient_id, message_type, content_size, message_content
+        # Return the relevant values.
+        return recipient_id, message_type, content_size, message_content
+    except Exception as e:
+        print("Error processing message:", e)
+        return None, None, None, None
 
 
 '''
@@ -118,6 +131,7 @@ def process_message(user_id, payload):
 response
 ===================================
 '''
+
 
 # header to binary
 def create_response_header(version, code, payload_size):
@@ -203,10 +217,6 @@ def build_users_payload(users_list):
         payload_bytes.extend(uname_bytes)
 
     return bytes(payload_bytes)
-
-#message id
-def generate_message_id():
-    return random.getrandbits(32)
 
 
 # data are decoded recipient_id, message_type, content_size, message_content from process_message

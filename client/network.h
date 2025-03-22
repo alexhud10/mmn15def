@@ -60,7 +60,7 @@ std::vector<uint8_t> message_payload_to_binary(const MessagePayload& payload);
 
 std::vector<uint8_t> create_registration_packet(const std::string& username, const std::string& public_key);
 
-std::vector<uint8_t> create_message_packet(const std::string& recipient, const std::string& message);
+std::vector<uint8_t> create_message_packet(const std::string& sender_id, const std::string& recipient, const std::string& message);
 
 std::vector<uint8_t> create_get_users_packet(const std::string& id);
 

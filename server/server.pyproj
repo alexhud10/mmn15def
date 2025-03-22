@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="config.py" />
     <Compile Include="messageHandler.py" />
+    <Compile Include="message_storage.py" />
     <Compile Include="server.py" />
     <Compile Include="tester.py" />
     <Compile Include="userManager.py" />

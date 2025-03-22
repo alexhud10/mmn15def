@@ -72,10 +72,12 @@ vector<uint8_t> message_payload_to_binary(const MessagePayload& payload) {
     // append content_size (4 bytes) in network byte order.
     // Convert content_size to network byte order.
     uint32_t cs_net = htonl(payload.content_size);
-    binary_data.push_back((cs_net >> 24) & 0xFF);
-    binary_data.push_back((cs_net >> 16) & 0xFF);
-    binary_data.push_back((cs_net >> 8) & 0xFF);
-    binary_data.push_back(cs_net & 0xFF);
+    const uint8_t* cs_ptr = reinterpret_cast<const uint8_t*>(&cs_net);
+    binary_data.insert(binary_data.end(), cs_ptr, cs_ptr + 4);
+    //binary_data.push_back((cs_net >> 24) & 0xFF);
+    //binary_data.push_back((cs_net >> 16) & 0xFF);
+    //binary_data.push_back((cs_net >> 8) & 0xFF);
+    //binary_data.push_back(cs_net & 0xFF);
 
     // append message content.
     binary_data.insert(binary_data.end(), payload.message_content.begin(), payload.message_content.end());

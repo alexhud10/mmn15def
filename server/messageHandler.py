@@ -3,17 +3,7 @@
 # works in parallel with protocolUtils that works on network layer
 
 from protocolUtils import *
-
-# decode packet with header and pay load
-# header values always the same
-# payload is different for each request
-
-'''
-==============================
-process for each request (users list)
-=============================
-'''
-
+from message_storage import *
 
 
 '''
@@ -40,10 +30,6 @@ def get_users(user_storage, user_id):
     return users_list
 
 
-
-
-
-
 '''
 ==============================
 handling requests
@@ -65,7 +51,6 @@ def build_response(version, code, data=None):
         payload = build_users_payload(data)
     elif code == 2103:
         payload = build_message_payload(data)
-        save_to_message_storage(data)
     else:
         # Default or unknown code
         # Could just return an empty payload or handle other codes
@@ -118,26 +103,28 @@ def process_request(header, payload, conn, user_storage, user_manager):
     Dispatches processing based on the request code in the header.
     """
     request_code = header.get("request_code")
-    user_id = header.get("client_id", "").strip()
-    user_id = bytes.fromhex(user_id).decode('ascii')
-    if request_code == 600:
+    if request_code == 600:  # registration
         success, response_data = process_registration(payload, user_storage, user_manager)
         if success:
             # Registration success; use code 2100 and data is client_id.
-            response_packet = build_response(1, 2100, response_data)
+            response_packet = build_response(1, 2100, response_data)  # response_data = get user id
             print("size of data sent: " + str(len(response_packet)))
             send_response(conn, response_packet)
-    elif request_code == 601:
-        # user_id = header.get("client_id", "").strip()
-        # user_id = bytes.fromhex(user_id).decode('ascii')
+    elif request_code == 601:  # get users list
+        user_id = header.get("client_id", "").strip()
+        user_id = bytes.fromhex(user_id).decode('ascii')
         print('server getting user id for user: ' + user_id)
-        response_data = get_users(user_storage, user_id)
+        response_data = get_users(user_storage, user_id) # user list
         response_packet = build_response(1, 2101, response_data)  # build header and payload to binary, generate packet
         print("size of data sent: " + str(len(response_packet)))
         send_response(conn, response_packet)
-    elif request_code == 603:
-        # another if for type message
+    elif request_code == 603:  # send message
+        user_id = header.get("client_id", "").strip()
+        user_id = bytes.fromhex(user_id).decode('ascii')
         response_data = process_message(user_id, payload)
-        response_packet = build_response(1, 2103, response_data)
+        if response_data[0] is not None:
+            response_packet = build_response(1, 2103, response_data)
+            send_response(conn, response_packet)
+            save_to_message_storage(user_id, payload)
     else:
         print(f"Unknown request code: {request_code}")

@@ -48,7 +48,7 @@ void handle_request(int option, ClientSession& session) {
         getline(cin, message);
 
         // Create binary packet for sending message
-        vector<uint8_t> packet = create_message_packet(recipient, message);
+        vector<uint8_t> packet = create_message_packet(session.client_id, recipient, message);
         send_data(session.socket, packet);  // Send message to server
     }
     else {
@@ -115,6 +115,11 @@ void handle_response(ClientSession& session, const Response& resp) {
         display_user_list(user_list);  // Assuming this function is defined in your client UI module.
         break;
     }
+    case 2103: {
+        display_message("message sent");
+        break;
+    }
+
     case 2106: {
         // Possibly an error message in text form
         string errorMsg(resp.payload.begin(), resp.payload.end());

@@ -16,7 +16,7 @@ class UserManager:
             'username': username,
             'public_key': public_key if public_key else None,
         }
-        self.save_user_data(user_data)
+        self.user_storage.save_user_data(user_data)
         print(f"User '{username}' registered with ID {user_id}.")
         return True, user_id
 
