@@ -10,9 +10,11 @@ This source file implements the network-related functions
 #include <iostream>
 #include <cstring> 
 #include <string>
+#include <cstddef>
 
 
-using namespace std;  // Using the std namespace
+
+using namespace std;  
 
 using boost::asio::ip::tcp;
 
@@ -70,7 +72,7 @@ vector<uint8_t> message_payload_to_binary(const MessagePayload& payload) {
     binary_data.push_back(payload.message_type);
 
     // append content_size (4 bytes) in network byte order.
-    // Convert content_size to network byte order.
+    // convert content_size to network byte order.
     uint32_t cs_net = htonl(payload.content_size);
     const uint8_t* cs_ptr = reinterpret_cast<const uint8_t*>(&cs_net);
     binary_data.insert(binary_data.end(), cs_ptr, cs_ptr + 4);
@@ -115,6 +117,25 @@ vector<uint8_t> create_registration_packet(const string& username, const std::st
     return packet;
 }
 
+vector<uint8_t> create_get_users_packet(const string& id) {
+    Header header;
+    string cid = id;
+    if (cid.size() < 16)
+        cid.append(16 - cid.size(), '\0');
+    else if (cid.size() > 16)
+        cid = cid.substr(0, 16);
+    memcpy(header.client_id, cid.data(), 16);
+
+    header.version = 1;
+    header.code = 601;  // users list request code.
+    header.payload_size = 0;  // no payload.
+
+    // build the packet from header only.
+    vector<uint8_t> packet = header_to_binary(header);
+    return packet;
+}
+
+
 vector<uint8_t> create_message_packet(const string& sender_id, const string& recipient, const string& message) {
     Header header;
     MessagePayload payload;
@@ -141,12 +162,10 @@ vector<uint8_t> create_message_packet(const string& sender_id, const string& rec
     return packet;
 }
 
-vector<uint8_t> create_get_users_packet(const string& id) {
+
+vector<uint8_t> create_pull_messages_packet(const string& client_id) {
     Header header;
-    // Copy the stored client_id into the header's client_id field.
-    // For requests, your header has 16 bytes for client_id.
-    // Assume that if session.client_id is not 16 bytes, we pad or truncate accordingly.
-    string cid = id;
+    string cid = client_id;
     if (cid.size() < 16)
         cid.append(16 - cid.size(), '\0');
     else if (cid.size() > 16)
@@ -154,13 +173,12 @@ vector<uint8_t> create_get_users_packet(const string& id) {
     memcpy(header.client_id, cid.data(), 16);
 
     header.version = 1;
-    header.code = 601;  // get users list request code.
-    header.payload_size = 0;  // no payload.
+    header.code = 604;
+    header.payload_size = 0;
 
-    // Build the packet from header only.
-    vector<uint8_t> packet = header_to_binary(header);
-    return packet;
+    return header_to_binary(header);
 }
+
 
 //===========================
 //response from server
@@ -209,7 +227,7 @@ void connect_to_server(tcp::socket& socket, const string& server_ip, int server_
         tcp::resolver resolver(io_context);
         auto endpoints = resolver.resolve(server_ip, to_string(server_port));
 
-        // Connect to the server
+        // connect to the server
         boost::asio::connect(socket, endpoints);
         cout << "Connected to server at " << server_ip << ":" << server_port << endl;
     }
@@ -224,7 +242,7 @@ void send_data(tcp::socket& socket, const vector<uint8_t>& data) {
         boost::asio::write(socket, boost::asio::buffer(data.data(), data.size()));
         cout << "sent: " << data.size() << " bytes of data" << endl;
     }
-    catch (exception& e) {
+    catch (exception& e) {  
         cerr << "Error sending data: " << e.what() << endl;
     }
 }
@@ -243,6 +261,6 @@ string receive_data(tcp::socket& socket) {
 }*/
 
 void close_connection(tcp::socket& socket) {
-    socket.close();  // Close the connection after use
+    socket.close();  // close the connection after use
     cout << "Connection closed." << endl;
 }

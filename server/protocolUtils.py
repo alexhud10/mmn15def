@@ -1,8 +1,6 @@
 # binary protocol implementation
 
 import struct
-import random
-from userManager import *
 from message_storage import *
 '''
 ===================================
@@ -13,17 +11,17 @@ decode packet arrived from client
 
 def decode_packet(data):
     """
-    Decodes a packet that contains:
+    decodes a packet that contains:
       - 16 bytes: client_id
       - 1 byte: version
       - 2 bytes: request code
       - 4 bytes: payload size
-    Followed by the payload.
+    followed by the payload.
 
-    Returns a tuple (header, payload) where header is a dictionary.
+    returns a tuple (header, payload) where header is a dictionary.
     """
     header_format = "!16s B H I"  # network order: 16-byte string, 1-byte, 2-byte, 4-byte
-    header_size = struct.calcsize(header_format)  # Should be 16 + 1 + 2 + 4 = 23 bytes
+    header_size = struct.calcsize(header_format)  # should be 16 + 1 + 2 + 4 = 23 bytes
 
     if len(data) < header_size:
         print("Error: Packet too short to contain valid header.")
@@ -50,8 +48,8 @@ processes for each request - includes payload decoding
 # request 600 for registration
 def process_registration(payload, user_storage, user_manager):
     """
-    Processes a registration request (request code 600).
-    Assumes payload format:
+    processes a registration request (request code 600).
+    assumes payload format:
       - 1 byte: name_length
       - n bytes: username (UTF-8)
       - 1 byte: public_key_length
@@ -86,9 +84,9 @@ def process_registration(payload, user_storage, user_manager):
 def process_message(user_id, payload):
 
     """
-    Processes a messaging request payload.
+    processes a messaging request payload.
 
-    Expected payload layout:
+    expected payload layout:
       - 16 bytes: Recipient ID (ASCII)
       - 1 byte: Message Type (expected to be 3 for text)
       - 4 bytes: Content size (big-endian)
@@ -177,13 +175,11 @@ def build_payload_registration_success(client_id):
     If 'client_id' is already a 16-byte value, just return it.
     Otherwise, ensure it's exactly 16 bytes (e.g., pad or truncate).
     """
-    # If you store client_id as a 16-byte array, just return it:
     if isinstance(client_id, bytes) and len(client_id) == 16:
         return client_id
 
-    # Otherwise, if it's a string and you need to encode:
-    client_id_bytes = client_id.encode('utf-8')  # or your chosen encoding
-    # Ensure exactly 16 bytes (pad or truncate as needed):
+    client_id_bytes = client_id.encode('utf-8')
+    # ensure exactly 16 bytes (pad or truncate as needed):
     client_id_bytes = client_id_bytes[:16].ljust(16, b'\0')
     return client_id_bytes
 
@@ -200,19 +196,19 @@ def build_users_payload(users_list):
     payload_bytes = bytearray()
 
     for user in users_list:
-        # Process the user ID (16 bytes)
+        # process the user ID (16 bytes)
         uid = user.get("user_id", "")
         uid_bytes = uid.encode("ascii", errors="ignore")[:16]
         uid_bytes = uid_bytes.ljust(16, b'\0')
 
-        # Process the username (255 bytes)
+        # process the username (255 bytes)
         uname = user.get("username", "")
-        # We use 254 bytes for characters then add a null terminator (or directly slice 255 if you include it)
+        # we use 254 bytes for characters then add null
         uname_bytes = uname.encode("ascii", errors="ignore")[:254]
         uname_bytes += b'\0'
         uname_bytes = uname_bytes.ljust(255, b'\0')
 
-        # Append the two fields to the payload
+        # append the two fields to the payload
         payload_bytes.extend(uid_bytes)
         payload_bytes.extend(uname_bytes)
 
@@ -222,12 +218,12 @@ def build_users_payload(users_list):
 # data are decoded recipient_id, message_type, content_size, message_content from process_message
 def build_message_payload(data):
     """
-    Given a tuple (recipient_id, message_type, content_size, message_content),
+    given a tuple (recipient_id, message_type, content_size, message_content),
     build a binary payload with the following layout:
       - 16 bytes: recipient_id (ASCII, padded/truncated)
       - 4 bytes: message_id
 
-    Returns the payload as bytes.
+    returns the payload as bytes.
     """
     recipient_id, message_type, content_size, message_content = data
 
@@ -240,3 +236,31 @@ def build_message_payload(data):
 
     payload_bytes = recipient_bytes + message_id_bytes
     return payload_bytes
+
+
+def build_pull_messages_payload(messages):
+    """
+    builds a binary payload for response 2104 with multiple messages:
+    for each message:
+      - 16 bytes: sender client ID
+      - 4 bytes: message ID
+      - 1 byte: message type
+      - 4 bytes: content size
+      - content_size bytes: message content
+    """
+    payload = bytearray()
+    for msg in messages:
+        sender_id = msg['sender_id'][:16].ljust(16, '\0').encode('ascii')
+        message_id_bytes = msg['message_id'].to_bytes(4, byteorder='big')
+        message_type = msg['message_type'].to_bytes(1, byteorder='big')
+        content_bytes = msg['message'].encode('utf-8')
+        content_size = len(content_bytes).to_bytes(4, byteorder='big')
+
+        payload.extend(sender_id)
+        payload.extend(message_id_bytes)
+        payload.extend(message_type)
+        payload.extend(content_size)
+        payload.extend(content_bytes)
+
+    return bytes(payload)
+

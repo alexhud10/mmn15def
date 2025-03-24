@@ -1,8 +1,8 @@
 
 import uuid
 
-# Global in-memory storage for messages.
-# Keys are recipient IDs (ASCII strings) and values are lists of message records.
+# in-memory storage for messages.
+# keys are recipient IDs (ASCII strings) and values are lists of message records.
 MESSAGE_STORAGE = {}
 
 
@@ -12,40 +12,38 @@ def generate_message_id():
 
 def decode_message_data(data):
     """
-    Decodes the raw message data.
+    decodes the raw message data.
 
-    Expected format of data:
+    expected format of data:
       - 16 bytes: recipient_id (ASCII, padded or truncated)
       - 1 byte: message_type (e.g., 3 for text)
       - 4 bytes: content_size (big-endian integer)
       - n bytes: message_content (UTF-8 encoded)
 
-    Returns a dictionary with:
+    returns a dictionary with:
       - 'recipient_id'
       - 'message_type'
       - 'content_size'
       - 'message_content'
 
-    Raises a ValueError if the data is incomplete.
+    raises a ValueError if the data is incomplete.
     """
     if len(data) < 21:
         raise ValueError("Data too short for a valid message payload.")
 
-    # Extract and decode the recipient ID.
+    # extract and decode the recipient ID.
     recipient_id_bytes = data[:16]
     recipient_id = recipient_id_bytes.decode('ascii', errors='ignore').rstrip('\0')
 
-    # Extract message type (1 byte at index 16)
     message_type = data[16]
 
-    # Extract content size (4 bytes, big-endian, from index 17 to 21)
+    # extract content size (4 bytes, big-endian, from index 17 to 21)
     content_size = int.from_bytes(data[17:21], byteorder='big')
 
-    # Ensure that the data contains the full message content.
     if len(data) < 21 + content_size:
         raise ValueError(f"Incomplete message content: expected {21 + content_size} bytes, got {len(data)}")
 
-    # Extract and decode the message content.
+    # extract and decode the message content.
     message_content_bytes = data[21:21+content_size]
     message_content = message_content_bytes.decode('utf-8', errors='replace')
 
@@ -61,14 +59,14 @@ def save_to_message_storage(sender_id, data):
     """
     Saves a message into MESSAGE_STORAGE.
 
-    Parameters:
+    parameters:
       - sender_id: The ID of the sender (string).
       - data: Raw bytes of the message payload (format defined in decode_message_data).
 
-    The function decodes the data, generates a new message ID, and creates a message record.
-    The record is then saved in MESSAGE_STORAGE under the recipient's ID.
+    function decodes the data, generates a new message ID, and creates a message record.
+    record is then saved in MESSAGE_STORAGE under the recipient's ID.
 
-    Returns the message record (a dictionary).
+    returns the message record (a dictionary).
     """
     try:
         # Decode the incoming message data.
@@ -95,7 +93,8 @@ def save_to_message_storage(sender_id, data):
     except Exception as e:
         print("Error saving message to storage:", e)
 
-# Optional: function to retrieve messages for a given recipient.
+
+# retrieve messages for a given recipient.
 def get_messages_for_recipient(recipient_id):
     """
     Returns a list of message records for the given recipient ID.

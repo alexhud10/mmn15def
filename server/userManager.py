@@ -9,7 +9,7 @@ class UserManager:
         self.user_storage = user_storage  # This will delegate to UserStorage for storing user data
 
     def register_user(self, username, public_key):
-        """Registers a new user by generating a user_id and storing in UserStorage."""
+        """registers a new user by generating a user_id and storing in UserStorage."""
         user_id = uuid.uuid4().hex[:16]
         user_data = {
             'user_id': user_id,
@@ -21,7 +21,7 @@ class UserManager:
         return True, user_id
 
     def authenticate_user(self, user_id):
-        """Authenticates a user by checking if their user_id exists in UserStorage."""
+        """authenticates a user by checking if their user_id exists in UserStorage."""
         user = self.user_storage.get_user_by_id(user_id)
         if user:
             print(f"User {user_id} authenticated.")

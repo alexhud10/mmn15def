@@ -2,7 +2,6 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-//#include "network.h"
 #include <boost/asio.hpp>  
 #include <iostream>
 #include <cstring> 
@@ -62,20 +61,18 @@ std::vector<uint8_t> create_registration_packet(const std::string& username, con
 
 std::vector<uint8_t> create_message_packet(const std::string& sender_id, const std::string& recipient, const std::string& message);
 
+std::vector<uint8_t> create_pull_messages_packet(const std::string& client_id);
+
 std::vector<uint8_t> create_get_users_packet(const std::string& id);
 
 Response read_response(tcp::socket& socket);
 
-// Function to establish a connection to the server
 void connect_to_server(tcp::socket& socket, const std::string& server_ip, int server_port);
 
-// Function to send a message to the server
 void send_data(tcp::socket& socket, const std::vector<uint8_t>& data);
 
-// Function to receive a response from the server
-std::string receive_data(tcp::socket& socket);
+//std::string receive_data(tcp::socket& socket);
 
-// Function to close the socket connection after communication is done
 void close_connection(tcp::socket& socket);
 
 #endif  // NETWORK_H

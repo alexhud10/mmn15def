@@ -15,8 +15,11 @@
 #include <fstream>
 #include <functional>
 #include <thread>
+#include <cstddef>
+
 
 using namespace std;  
+
 
 
 // handle the different requests based on user input
@@ -40,14 +43,31 @@ void handle_request(int option, ClientSession& session) {
         send_data(session.socket, packet);
 
     }
+    else if (option == 140) {  // get waiting messages
+        if (session.client_id.empty()) {
+            cerr << "Error: Client ID is not set. Please register first.\n";
+            return;
+        }
+        vector<uint8_t> packet = create_pull_messages_packet(session.client_id);
+        send_data(session.socket, packet);
+    }
     else if (option == 150) {  // send message op
+        if (session.client_id.empty()) {
+            cerr << "Error: Client ID is not set. Please register first.\n";
+            return;
+        }
         string recipient, message;
-        cout << "Enter recipient's username: ";
+        cout << "Enter recipient's username: " << endl;
         getline(cin, recipient);
-        cout << "Enter your message: ";
+        //string recipient_id = get_id_by_username(recipient);
+        //if (recipient_id.empty()) {
+         //   display_err("Recipient not found in local info. Please refresh or check spelling");
+        //    return;
+        //}
+        cout << "Enter your message: " << endl;
         getline(cin, message);
 
-        // Create binary packet for sending message
+        // binary packet for sending message
         vector<uint8_t> packet = create_message_packet(session.client_id, recipient, message);
         send_data(session.socket, packet);  // Send message to server
     }
@@ -60,13 +80,13 @@ void handle_request(int option, ClientSession& session) {
 void handle_response(ClientSession& session, const Response& resp) {
     const ResponseHeader& h = resp.header;
 
-    // For demonstration, convert client_id to hex or just print
+    // for demonstration, convert client_id to hex or just print
     cout << "Version: " << (int)h.version << "\n";
     cout << "Code:    " << h.code << "\n";
     cout << "Payload: " << h.payload_size << " bytes\n";
 
     switch (h.code) {
-    case 2100: { // Registration success
+    case 2100: { // registration success
         // 16 bytes of new client ID in payload
         if (resp.payload.size() < 16) {
             cerr << "Error: incomplete client ID in payload\n";
@@ -77,8 +97,12 @@ void handle_response(ClientSession& session, const Response& resp) {
         cout << "Registration success! Client ID: " << clientID << "\n";
         // add user id to session
         session.client_id = clientID;
+
         // save username and client ID to "my.info"
+        //ofstream myInfoFile("C:\\Users\\Alexa\\Documents\\OU\\????? ?????? ???????\\mmn 15\\mmn15def\\x64\\Debug", ios::app);
         ofstream myInfoFile("my.info", ios::app);
+        //std::string my v vInfoPath = get_executable_directory() + "\\my.info";
+        //ofstream myInfoFile(myInfoPath, ios::app);
         if (myInfoFile.is_open()) {
             myInfoFile << session.username << "\n" << clientID << "\n";
             myInfoFile.close();
@@ -89,8 +113,8 @@ void handle_response(ClientSession& session, const Response& resp) {
         }
         break;
     }
-    case 2101: {
-        // Each user record is 16 bytes for user_id + 255 bytes for username = 271 bytes.
+    case 2101: {  //user list
+        // each user record is 16 bytes for user_id + 255 bytes for username = 271 bytes.
         size_t record_size = 16 + 255; // 271 bytes per record.
         if (resp.payload.size() % record_size != 0) {
             cerr << "Error: Payload size is not a multiple of " << record_size << " bytes.\n";
@@ -100,33 +124,63 @@ void handle_response(ClientSession& session, const Response& resp) {
         vector<string> user_list;
         for (size_t i = 0; i < num_users; i++) {
             size_t offset = i * record_size;
-            // Skip the first 16 bytes (user ID), and read the next 255 bytes for username.
+            // skip the first 16 bytes (user ID), and read the next 255 bytes for username.
             string username(resp.payload.begin() + offset + 16,
                 resp.payload.begin() + offset + record_size);
-            // Trim off trailing null characters.
+            // dealing null characters.
             size_t null_pos = username.find('\0');
             if (null_pos != string::npos) {
                 username = username.substr(0, null_pos);
             }
             user_list.push_back(username);
         }
-        // Call a UI function to display the user list.
+        // display the user list.
         cout << "for user: " << session.client_id << " display users list" << "\n";
-        display_user_list(user_list);  // Assuming this function is defined in your client UI module.
+        display_user_list(user_list); 
         break;
     }
-    case 2103: {
+    case 2103: {  //message sent reponse
         display_message("message sent");
         break;
     }
+    case 2104: {  //pull messages response
+        if (resp.payload.empty()) {
+            display_message("No new messages.");
+            break;
+        }
+
+        size_t offset = 0;
+        while (offset < resp.payload.size()) {
+            // Parse each message
+            string sender_id(resp.payload.begin() + offset, resp.payload.begin() + offset + 16);
+            offset += 16;
+            uint32_t message_id = (resp.payload[offset] << 24) | (resp.payload[offset + 1] << 16) |
+                (resp.payload[offset + 2] << 8) | resp.payload[offset + 3];
+            offset += 4;
+            uint8_t message_type = resp.payload[offset];
+            offset += 1;
+            uint32_t content_size = (resp.payload[offset] << 24) | (resp.payload[offset + 1] << 16) |
+                (resp.payload[offset + 2] << 8) | resp.payload[offset + 3];
+            offset += 4;
+            string message_content(resp.payload.begin() + offset, resp.payload.begin() + offset + content_size);
+            offset += content_size;
+
+            display_message("From: " + sender_id);
+            display_message("Content: " + message_content);
+            display_message("-----<EOM>-----");
+
+        }
+        break;
+    }
+
 
     case 2106: {
-        // Possibly an error message in text form
+        
         string errorMsg(resp.payload.begin(), resp.payload.end());
         cout << "Registration failed: " << errorMsg << "\n";
         break;
     }
-             // Add more codes (2104, etc.) as needed
+             
     default:
         cout << "Unknown response code: " << h.code << "\n";
         break;
@@ -144,7 +198,7 @@ void client_function(const string& server_ip, int server_port, ClientSession &se
             ClientSession session(io_context);  // each client gets its own socket
             */
             connect_to_server(session.socket, server_ip, server_port);
-            // Send a message
+            
             int usr_input = get_user_input();
 
             handle_request(usr_input, session);
@@ -164,7 +218,7 @@ void client_function(const string& server_ip, int server_port, ClientSession &se
 
 int main() {
 
-    // initialize the config object and load server info from server.info
+    
     config cfg;
     cfg.load_file("server.info");
 
@@ -188,7 +242,6 @@ int main() {
         t.join();
     }
 
-    
     
 
     return 0;

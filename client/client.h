@@ -4,29 +4,9 @@
 #include <boost/asio.hpp>  
 #include <string>
 #include "config.h"
-#include "network.h"  // For network functions like connect_to_server, send_message, etc.
+#include "network.h"  
 using boost::asio::ip::tcp;
 using namespace std;
-
-// Declare the configuration class to manage server IP and port
-/*class config {
-public:
-    // Constructor with default values
-    config();
-
-    // Method to load server information from a file
-    void load_file(const string& filename);
-
-    // Getter for the server IP
-    string get_ip() const;
-
-    // Getter for the server port
-    int get_port() const;
-
-private:
-    string serverIP;
-    int serverPort;
-};*/
 
 class ClientSession {
 public:
@@ -39,10 +19,12 @@ public:
         : socket(io_context) {}
 };
 
+std::string get_id_by_username(const std::string& username);
+
 void handle_request(int option, ClientSession& session);
 
 void handle_response(ClientSession& session, const Response& resp);
 
-void client_function(const string& server_ip, int server_port);
+void client_function(const string& server_ip, int server_port, ClientSession& session);
 
 #endif  // CLIENT_H

@@ -1,29 +1,30 @@
 #include "client_ui.h"
 #include <iostream>
 #include <string>
-#include "network.h"  // For networking functions like send_data, receive_data
+#include "network.h"  
+
 
 using namespace std;
 
-// Function to get user input (message to send)
+// function to get user input (message to send)
 int get_user_input() {
     int option;
     cout << "\nChoose an option:" << endl;
     cout << "110 - Register User" << endl;
     cout << "120 - Request for clients list" << endl;
+    cout << "140 - Request for waiting messages" << endl;
     cout << "150 - Send a text message" << endl;
     cout << "Enter your choice: ";
     cin >> option;
-    cin.ignore();  // To discard the leftover newline character
+    cin.ignore();  // discard the leftover newline character
     return option;
 }
 
-// Function to display the message received from the server
 void display_message(const string& message) {
-    cout << "Server response: " << message << endl;
+    cout << " " << message << endl;
 }
 
-// Function to display error messages
+// display error messages
 void display_err(const string& error_message) {
     cerr << "Error: " << error_message << endl;
 }

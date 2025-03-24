@@ -16,7 +16,7 @@ processes
 # function for request 601 to get users list
 def get_users(user_storage, user_id):
     """
-    Retrieves all users from user_storage, excluding the requester,
+    retrieves all users from user_storage, excluding the requester
     """
     all_users = user_storage.load_user_data()  # user list contain user dict info
     users_list = []
@@ -40,20 +40,16 @@ handling requests
 # generate payload for each response code (2xxx)
 def build_response(version, code, data=None):
     """
-    Given a response code and optional data, build the appropriate payload
+    given a response code and optional data, build the appropriate payload
     and then create the full response packet (header + payload).
     """
     if code == 2100:
-        # Registration success
-        # 'data' is expected to be the client_id (string or bytes)
         payload = build_payload_registration_success(data)
     elif code == 2101:
         payload = build_users_payload(data)
     elif code == 2103:
         payload = build_message_payload(data)
     else:
-        # Default or unknown code
-        # Could just return an empty payload or handle other codes
         payload = b''
 
     return create_response_packet(version, code, payload)  # creates header and payload packet
@@ -61,9 +57,9 @@ def build_response(version, code, data=None):
 
 def send_response(conn, response_packet):
     """
-    Sends the complete response packet to the client over the connection.
+    sends the complete response packet to the client over the connection.
 
-    Parameters:
+    parameters:
       - conn: a socket object (e.g., from the socket module) already connected to the client.
       - response_packet: a bytes object that represents the full response (header + payload).
     """
@@ -77,9 +73,9 @@ def send_response(conn, response_packet):
 # receiving messages from client
 def handle_client(conn, user_storage, user_manager):
     try:
-        # Receive data from the client
+        # receive data from the client
         data = conn.recv(1024)
-        # If no data is received, return
+        # if no data is received, return
         if not data:
             print("no data received \n")
             return
@@ -100,7 +96,7 @@ def handle_client(conn, user_storage, user_manager):
 
 def process_request(header, payload, conn, user_storage, user_manager):
     """
-    Dispatches processing based on the request code in the header.
+    dispatches processing based on the request code in the header.
     """
     request_code = header.get("request_code")
     if request_code == 600:  # registration
@@ -114,10 +110,56 @@ def process_request(header, payload, conn, user_storage, user_manager):
         user_id = header.get("client_id", "").strip()
         user_id = bytes.fromhex(user_id).decode('ascii')
         print('server getting user id for user: ' + user_id)
-        response_data = get_users(user_storage, user_id) # user list
+        response_data = get_users(user_storage, user_id)  # user list
         response_packet = build_response(1, 2101, response_data)  # build header and payload to binary, generate packet
         print("size of data sent: " + str(len(response_packet)))
         send_response(conn, response_packet)
+    elif request_code == 603:  # send message
+        user_id = header.get("client_id", "").strip()
+        user_id = bytes.fromhex(user_id).decode('ascii')
+        recipient_id, message_type, content_size, message_content = process_message(user_id, payload)
+        # recipient validation:
+        recipient_user = user_storage.get_user_by_id(recipient_id)
+        if not recipient_user:
+            print(f"Recipient ID {recipient_id} not found.")
+            response_packet = build_response(1, 2106, b'User does not exist')
+            send_response(conn, response_packet)
+            return
+
+        if recipient_user and not user_storage.username_exists(recipient_user['username']):
+            print(f"Recipient username {recipient_user['username']} not found.")
+            response_packet = build_response(1, 2106, b'User does not exist')
+            send_response(conn, response_packet)
+            return
+
+        response_data = (recipient_id, message_type, content_size, message_content)
+        response_packet = build_response(1, 2103, response_data)
+        send_response(conn, response_packet)
+        save_to_message_storage(user_id, payload)
+
+    elif request_code == 604:  # get all waiting messages
+        user_id = header.get("client_id", "").strip()
+        user_id = bytes.fromhex(user_id).decode('ascii')
+        print(f"Received message fetch request from: {user_id}")
+        messages = get_messages_for_recipient(user_id)
+        if not messages:
+            print(f"No messages for {user_id}")
+            # Still send an empty 2104 payload
+            response_packet = build_response(1, 2104, b'')
+            send_response(conn, response_packet)
+            return
+        response_payload = build_pull_messages_payload(messages)
+        response_packet = build_response(1, 2104, response_payload)
+        send_response(conn, response_packet)
+        # clear the messages after sending
+        MESSAGE_STORAGE.pop(user_id, None)
+
+    else:
+        print(f"Unknown request code: {request_code}")
+
+
+
+'''
     elif request_code == 603:  # send message
         user_id = header.get("client_id", "").strip()
         user_id = bytes.fromhex(user_id).decode('ascii')
@@ -126,5 +168,4 @@ def process_request(header, payload, conn, user_storage, user_manager):
             response_packet = build_response(1, 2103, response_data)
             send_response(conn, response_packet)
             save_to_message_storage(user_id, payload)
-    else:
-        print(f"Unknown request code: {request_code}")
+'''

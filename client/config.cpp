@@ -7,6 +7,7 @@ opens file with connection info
 #include <iostream>
 #include <sstream>
 
+
 using namespace std;
 
 //constructor with default values
@@ -43,4 +44,6 @@ string config::get_ip() const {
 int config::get_port() const {
     return serverPort;
 }
+
+
 

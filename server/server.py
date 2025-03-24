@@ -1,7 +1,9 @@
-# getting connection info from config.py and connecting with socket
+
+
+
 import socket
 import threading
-from messageHandler import handle_client  # Assuming handle_client is defined elsewhere
+from messageHandler import handle_client
 from config import get_port  # config is a file, get_port is the func we will use or can do * for getting all func
 from userStorage import UserStorage
 from userManager import UserManager
