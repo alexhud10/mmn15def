@@ -1,6 +1,4 @@
 
-
-
 import socket
 import threading
 from messageHandler import handle_client

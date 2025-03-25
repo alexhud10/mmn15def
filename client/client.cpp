@@ -71,6 +71,11 @@ void handle_request(int option, ClientSession& session) {
         vector<uint8_t> packet = create_message_packet(session.client_id, recipient_id, message);
         send_data(session.socket, packet);  // Send message to server
     }
+    else if (option == 0) {
+        cout << "Exiting client. Releasing resources..." << endl;
+        close_connection(session.socket);  
+        exit(0);  // terminate the program
+    }
     else {
         display_err("Invalid option selected.");
     }
@@ -174,15 +179,15 @@ void handle_response(ClientSession& session, const Response& resp) {
         }
         break;
     }
-
-
-    case 2106: {
-        
+    case 2106: {      
         string errorMsg(resp.payload.begin(), resp.payload.end());
         cout << "Registration failed: " << errorMsg << "\n";
         break;
     }
-             
+    case 9000: {
+        display_message("General error occurred on the server.");
+        break;
+    }        
     default:
         cout << "Unknown response code: " << h.code << "\n";
         break;

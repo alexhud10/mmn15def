@@ -14,6 +14,7 @@ int get_user_input() {
     cout << "120 - Request for clients list" << endl;
     cout << "140 - Request for waiting messages" << endl;
     cout << "150 - Send a text message" << endl;
+    cout << "0 - Exit client" << endl;
     cout << "Enter your choice: ";
     cin >> option;
     cin.ignore();  // discard the leftover newline character

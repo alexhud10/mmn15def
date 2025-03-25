@@ -51,6 +51,8 @@ def build_response(version, code, data=None):
         payload = build_message_payload(data)
     elif code == 2104:
         payload = build_pull_messages_payload(data)
+    elif code == 9000:
+        payload = b''
     else:
         payload = b''
 
@@ -161,16 +163,7 @@ def process_request(header, payload, conn, user_storage, user_manager):
 
     else:
         print(f"Unknown request code: {request_code}")
+        response_packet = build_response(1, 9000)
+        send_response(conn, response_packet)
 
 
-
-'''
-    elif request_code == 603:  # send message
-        user_id = header.get("client_id", "").strip()
-        user_id = bytes.fromhex(user_id).decode('ascii')
-        response_data = process_message(user_id, payload)
-        if response_data[0] is not None:
-            response_packet = build_response(1, 2103, response_data)
-            send_response(conn, response_packet)
-            save_to_message_storage(user_id, payload)
-'''
