@@ -49,6 +49,8 @@ def build_response(version, code, data=None):
         payload = build_users_payload(data)
     elif code == 2103:
         payload = build_message_payload(data)
+    elif code == 2104:
+        payload = build_pull_messages_payload(data)
     else:
         payload = b''
 
@@ -64,6 +66,8 @@ def send_response(conn, response_packet):
       - response_packet: a bytes object that represents the full response (header + payload).
     """
     try:
+        header_info = struct.unpack("!B H I", response_packet[:7])
+        print(f"[DEBUG] Server sending header: version={header_info[0]}, code={header_info[1]}, payload_size={header_info[2]}")
         conn.sendall(response_packet)
         print("Response successfully sent to client.")
     except Exception as e:
@@ -138,21 +142,22 @@ def process_request(header, payload, conn, user_storage, user_manager):
         save_to_message_storage(user_id, payload)
 
     elif request_code == 604:  # get all waiting messages
-        user_id = header.get("client_id", "").strip()
-        user_id = bytes.fromhex(user_id).decode('ascii')
-        print(f"Received message fetch request from: {user_id}")
-        messages = get_messages_for_recipient(user_id)
+        recipient_id = header.get("client_id", "").strip()
+        recipient_id = bytes.fromhex(recipient_id).decode('ascii')
+        print(f"Received message fetch request from: {recipient_id}")
+        print("DEBUG: Current MESSAGE_STORAGE:", MESSAGE_STORAGE)  # -------------------
+        messages = get_messages_for_recipient(recipient_id)
+        print(f"DEBUG: Messages for {recipient_id}: {messages}")  # -------------------
         if not messages:
-            print(f"No messages for {user_id}")
+            print(f"No messages for {recipient_id}")
             # Still send an empty 2104 payload
             response_packet = build_response(1, 2104, b'')
             send_response(conn, response_packet)
             return
-        response_payload = build_pull_messages_payload(messages)
-        response_packet = build_response(1, 2104, response_payload)
+        response_packet = build_response(1, 2104, messages)
         send_response(conn, response_packet)
         # clear the messages after sending
-        MESSAGE_STORAGE.pop(user_id, None)
+        MESSAGE_STORAGE.pop(recipient_id, None)
 
     else:
         print(f"Unknown request code: {request_code}")

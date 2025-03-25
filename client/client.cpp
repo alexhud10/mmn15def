@@ -16,10 +16,10 @@
 #include <functional>
 #include <thread>
 #include <cstddef>
+#include "utils.h"
 
 
 using namespace std;  
-
 
 
 // handle the different requests based on user input
@@ -59,16 +59,16 @@ void handle_request(int option, ClientSession& session) {
         string recipient, message;
         cout << "Enter recipient's username: " << endl;
         getline(cin, recipient);
-        //string recipient_id = get_id_by_username(recipient);
-        //if (recipient_id.empty()) {
-         //   display_err("Recipient not found in local info. Please refresh or check spelling");
-        //    return;
-        //}
+        string recipient_id = get_id_by_username(recipient);
+        if (recipient_id.empty()) {
+            display_err("Recipient not found in local info. Please refresh or check spelling");
+            return;
+        }
         cout << "Enter your message: " << endl;
         getline(cin, message);
 
         // binary packet for sending message
-        vector<uint8_t> packet = create_message_packet(session.client_id, recipient, message);
+        vector<uint8_t> packet = create_message_packet(session.client_id, recipient_id, message);
         send_data(session.socket, packet);  // Send message to server
     }
     else {
@@ -144,6 +144,7 @@ void handle_response(ClientSession& session, const Response& resp) {
         break;
     }
     case 2104: {  //pull messages response
+        cout << "Payload size before processing: " << resp.payload.size() << endl;
         if (resp.payload.empty()) {
             display_message("No new messages.");
             break;
@@ -165,7 +166,8 @@ void handle_response(ClientSession& session, const Response& resp) {
             string message_content(resp.payload.begin() + offset, resp.payload.begin() + offset + content_size);
             offset += content_size;
 
-            display_message("From: " + sender_id);
+            string sender_name = get_username_by_id(sender_id);
+            display_message("From: " + sender_name);
             display_message("Content: " + message_content);
             display_message("-----<EOM>-----");
 

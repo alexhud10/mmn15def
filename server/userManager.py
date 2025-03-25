@@ -19,7 +19,7 @@ class UserManager:
         self.user_storage.save_user_data(user_data)
         print(f"User '{username}' registered with ID {user_id}.")
         return True, user_id
-
+'''
     def authenticate_user(self, user_id):
         """authenticates a user by checking if their user_id exists in UserStorage."""
         user = self.user_storage.get_user_by_id(user_id)
@@ -29,4 +29,4 @@ class UserManager:
         else:
             print(f"User {user_id} not found.")
             return False
-
+'''

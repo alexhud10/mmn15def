@@ -72,6 +72,11 @@ def save_to_message_storage(sender_id, data):
         # Decode the incoming message data.
         decoded = decode_message_data(data)
 
+        print("DEBUG: Saving message")   # --------------------------------------
+        print(f"Sender ID: {sender_id}")
+        print(f"Recipient ID: {decoded['recipient_id']}")
+        print(f"Message Content: {decoded['message_content']}")
+
         # Generate a new message ID.
         message_id = generate_message_id()
 
@@ -89,6 +94,7 @@ def save_to_message_storage(sender_id, data):
             MESSAGE_STORAGE[decoded['recipient_id']] = []
         MESSAGE_STORAGE[decoded['recipient_id']].append(message_record)
 
+        print(f"DEBUG: Message saved for recipient {decoded['recipient_id']}")   # -------------
         return message_record
     except Exception as e:
         print("Error saving message to storage:", e)

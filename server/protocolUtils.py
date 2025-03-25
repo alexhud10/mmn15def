@@ -144,6 +144,7 @@ def create_response_header(version, code, payload_size):
     #  - B : 1-byte unsigned char
     #  - H : 2-byte unsigned short
     #  - I : 4-byte unsigned int
+    
     return struct.pack("!B H I", version, code, payload_size)
 
 
@@ -262,5 +263,7 @@ def build_pull_messages_payload(messages):
         payload.extend(content_size)
         payload.extend(content_bytes)
 
-    return bytes(payload)
+    payload_bytes = bytes(payload)
+    print(f"Built pull messages payload of size: {len(payload_bytes)} bytes")
+    return payload_bytes
 

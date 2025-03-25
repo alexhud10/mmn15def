@@ -187,7 +187,14 @@ vector<uint8_t> create_pull_messages_packet(const string& client_id) {
 Response read_response(tcp::socket& socket) {
     // create buffer: read exactly the size of the Header (which is 1+2+4 = 23 bytes).
     vector<uint8_t> headerBuf(sizeof(ResponseHeader));
+
     boost::asio::read(socket, boost::asio::buffer(headerBuf.data(), headerBuf.size()));
+
+    cout << "Raw header bytes received: ";
+    for (auto b : headerBuf) {
+        printf("%02X ", b);
+    }
+    cout << endl;
 
     // copy the raw bytes into a Header struct
     ResponseHeader rawHeader;
@@ -196,6 +203,10 @@ Response read_response(tcp::socket& socket) {
     // convert endians
     rawHeader.code = ntohs(rawHeader.code);
     rawHeader.payload_size = ntohl(rawHeader.payload_size);
+
+    cout << "Decoded header from server: version=" << (int)rawHeader.version
+        << ", code=" << rawHeader.code
+        << ", payload_size=" << rawHeader.payload_size << endl;
 
     // read the payload (if any)
     std::vector<uint8_t> payload;

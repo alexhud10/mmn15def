@@ -137,12 +137,14 @@
     <ClInclude Include="client_ui.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="network.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client.cpp" />
     <ClCompile Include="client_ui.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="network.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
