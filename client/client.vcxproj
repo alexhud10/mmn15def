@@ -77,14 +77,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\cryptopp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\cryptopp;C:\cryptopp</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\cryptopp\x64\Output\Debug;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cryptlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\cryptopp\Win32\Output\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,14 +137,19 @@
     <ClInclude Include="client.h" />
     <ClInclude Include="client_ui.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="encryption.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AESWrapper.cpp" />
+    <ClCompile Include="Base64Wrapper.cpp" />
     <ClCompile Include="client.cpp" />
     <ClCompile Include="client_ui.cpp" />
     <ClCompile Include="config.cpp" />
+    <ClCompile Include="encryption.cpp" />
     <ClCompile Include="network.cpp" />
+    <ClCompile Include="RSAWrapper.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
