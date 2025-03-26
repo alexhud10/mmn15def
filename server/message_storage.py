@@ -1,8 +1,8 @@
+# in-memory storage for messages.
+# keys are recipient IDs (ASCII strings) and values are lists of message records.
 
 import uuid
 
-# in-memory storage for messages.
-# keys are recipient IDs (ASCII strings) and values are lists of message records.
 MESSAGE_STORAGE = {}
 
 

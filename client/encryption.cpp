@@ -1,3 +1,5 @@
+//encryption code for messages encryption 
+
 #include "encryption.h"
 #include "RSAWrapper.h"
 #include "AESWrapper.h"

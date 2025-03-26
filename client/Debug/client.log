@@ -1,6 +1,3 @@
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (cryptopp_wrapper.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  AESWrapper.cpp
-  Base64Wrapper.cpp
-  RSAWrapper.cpp
-  Generating Code...
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (cryptopp_wrapper.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  config.cpp
   client.vcxproj -> C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\Debug\client.exe

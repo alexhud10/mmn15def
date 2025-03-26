@@ -35,12 +35,12 @@ void config::load_file(const string& filename) {
     }
 }
 
-// Getter for the server IP
+// getter for the server IP
 string config::get_ip() const {
     return serverIP;
 }
 
-// Getter for the server port
+// getter for the server port
 int config::get_port() const {
     return serverPort;
 }

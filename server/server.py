@@ -1,4 +1,8 @@
 
+# sets up a TCP server that listens for incoming client connections on a specified port
+# each connection is handled in a separate thread
+# passing it to handle_client along with user management and storage objects
+
 import socket
 import threading
 from messageHandler import handle_client
