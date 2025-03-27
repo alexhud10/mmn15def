@@ -65,6 +65,8 @@ std::vector<uint8_t> create_pull_messages_packet(const std::string& client_id);
 
 std::vector<uint8_t> create_get_users_packet(const std::string& id);
 
+std::vector<uint8_t> create_get_public_key_packet(const std::string& sender_id, const std::string& recipient_id);
+
 Response read_response(tcp::socket& socket);
 
 void connect_to_server(tcp::socket& socket, const std::string& server_ip, int server_port);

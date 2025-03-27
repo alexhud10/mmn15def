@@ -55,6 +55,20 @@ void handle_request(int option, ClientSession& session) {
         send_data(session.socket, packet);
 
     }
+    else if (option == 130) {  // public key request
+        string target_username;
+        cout << "Enter recipient username: ";
+        getline(cin, target_username);
+
+        string recipient_id = get_id_by_username(target_username);
+        if (recipient_id.empty()) {
+            cerr << "Error: recipient not found in file.\n";
+            return;
+        }
+
+        vector<uint8_t> packet = create_get_public_key_packet(session.client_id, recipient_id);
+        send_data(session.socket, packet);
+    }
     else if (option == 140) {  // get waiting messages
         if (session.client_id.empty()) {
             cerr << "Error: Client ID is not set. Please register first.\n";
@@ -121,7 +135,6 @@ void handle_response(ClientSession& session, const Response& resp) {
             myInfoFile << session.username << "\n";
             myInfoFile << clientID << "\n";
             myInfoFile << session.rsaPrivateKey << "\n";
-            myInfoFile << session.rsaPublicKey << "\n";
             myInfoFile.close();
             //cout << "Saved registration info to my.info with id " << session.client_id << "\n";
         }

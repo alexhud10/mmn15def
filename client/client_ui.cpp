@@ -12,6 +12,7 @@ int get_user_input() {
     cout << "\nChoose an option:" << endl;
     cout << "110 - Register User" << endl;
     cout << "120 - Request for clients list" << endl;
+    cout << "130 - Request for public key" << endl;
     cout << "140 - Request for waiting messages" << endl;
     cout << "150 - Send a text message" << endl;
     cout << "0 - Exit client" << endl;

@@ -130,6 +130,27 @@ vector<uint8_t> create_get_users_packet(const string& id) {
     return packet;
 }
 
+vector<uint8_t> create_get_public_key_packet(const string& sender_id, const string& recipient_id) {
+    Header header;
+    string cid = sender_id;
+    if (cid.size() < 16) cid.append(16 - cid.size(), '\0');
+    memcpy(header.client_id, cid.data(), 16);
+
+    header.version = 1;
+    header.code = 602; // request public key
+
+    string rid = recipient_id;
+    if (rid.size() < 16) rid.append(16 - rid.size(), '\0');
+    vector<uint8_t> payload(rid.begin(), rid.end());
+
+    header.payload_size = payload.size();
+
+    vector<uint8_t> packet = header_to_binary(header);
+    packet.insert(packet.end(), payload.begin(), payload.end());
+    return packet;
+}
+
+
 
 vector<uint8_t> create_message_packet(const string& sender_id, const string& recipient, const string& message) {
     Header header;
@@ -171,6 +192,7 @@ vector<uint8_t> create_pull_messages_packet(const string& client_id) {
     header.code = 604;
     header.payload_size = 0;
 
+    //dont have payload so sending only header (binary)
     return header_to_binary(header);
 }
 
