@@ -10,6 +10,7 @@
 #include "RSAWrapper.h"
 
 extern std::unordered_map<std::string, AESWrapper> symmetric_keys;
+extern std::unordered_map<std::string, std::string> known_public_keys;
 
 std::string request_public_key(const std::string& recipient_id, ClientSession& session);
 void send_symmetric_key(const std::string& recipient_id, const std::string& public_key, ClientSession& session, const std::string& sender_id);

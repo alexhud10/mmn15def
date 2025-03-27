@@ -18,10 +18,14 @@
 #include <cstddef>
 #include "utils.h"
 #include "Base64Wrapper.h"
+#include "encryption.h"
 
 
 using namespace std;  
 
+//===========================
+// handle request from user ui (code 1xx)
+//===========================
 
 // handle the different requests based on user input
 void handle_request(int option, ClientSession& session) {
@@ -56,11 +60,11 @@ void handle_request(int option, ClientSession& session) {
 
     }
     else if (option == 130) {  // public key request
-        string target_username;
+        string recipient_username;
         cout << "Enter recipient username: ";
-        getline(cin, target_username);
+        getline(cin, recipient_username);
 
-        string recipient_id = get_id_by_username(target_username);
+        string recipient_id = get_id_by_username(recipient_username);
         if (recipient_id.empty()) {
             cerr << "Error: recipient not found in file.\n";
             return;
@@ -106,6 +110,11 @@ void handle_request(int option, ClientSession& session) {
         display_err("Invalid option selected.");
     }
 }
+
+
+//===========================
+// handle request from server (code 2xxx)
+//===========================
 
 // getting response(raw header and payload) from read_response function and handle it
 void handle_response(ClientSession& session, const Response& resp) {
@@ -165,10 +174,24 @@ void handle_response(ClientSession& session, const Response& resp) {
             user_list.push_back(username);
         }
         // display the user list.
-        cout << "for user: " << session.client_id << " display users list" << "\n";
+        //cout << "for user: " << session.client_id << " display users list" << "\n";
         display_user_list(user_list); 
         break;
     }
+    case 2102: {  // public key response
+        if (resp.payload.size() < 16) {
+            cerr << "Payload too small for public key response\n";
+            return;
+        }
+        string recipient_id(resp.payload.begin(), resp.payload.begin() + 16);
+        string public_key(resp.payload.begin() + 16, resp.payload.end());
+        known_public_keys[recipient_id] = public_key;
+        cout << "Received public key for client " << endl;
+        //cout << public_key << endl;
+
+        break;
+    }
+
     case 2103: {  //message sent reponse
         display_message("message sent");
         break;

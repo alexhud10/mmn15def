@@ -10,6 +10,7 @@
 
 
 std::unordered_map<std::string, AESWrapper> symmetric_keys;
+std::unordered_map<std::string, std::string> known_public_keys;
 
 
 std::string request_public_key(const std::string& recipient_id, ClientSession& session) {

@@ -215,6 +215,12 @@ def build_users_payload(users_list):
 
     return bytes(payload_bytes)
 
+def build_public_key_payload(user_id, public_key):
+    uid_bytes = user_id.encode('ascii')[:16].ljust(16, b'\0')
+    pub_key_bytes = public_key.encode('utf-8')
+    return uid_bytes + pub_key_bytes
+
+
 
 # data are decoded recipient_id, message_type, content_size, message_content from process_message
 def build_message_payload(data):

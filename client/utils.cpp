@@ -18,8 +18,8 @@ string get_id_by_username(const string& username) {
         return "";
     }
 
-    string file_username, file_userid;
-    while (getline(file, file_username) && getline(file, file_userid)) {
+    string file_username, file_userid, public_key;
+    while (getline(file, file_username) && getline(file, file_userid) && getline(file, public_key)) {
         if (file_username == username) {
             return file_userid;
         }

@@ -47,6 +47,10 @@ def build_response(version, code, data=None):
         payload = build_payload_registration_success(data)
     elif code == 2101:
         payload = build_users_payload(data)
+    elif code == 2102:
+        # data = (recipient_id, public_key)
+        recipient_id, pub_key = data
+        payload = build_public_key_payload(recipient_id, pub_key)
     elif code == 2103:
         payload = build_message_payload(data)
     elif code == 2104:
@@ -120,6 +124,20 @@ def process_request(header, payload, conn, user_storage, user_manager):
         response_packet = build_response(1, 2101, response_data)  # build header and payload to binary, generate packet
         print("size of data sent: " + str(len(response_packet)))
         send_response(conn, response_packet)
+    elif request_code == 602:  # request for public key
+        recipient_id_bytes = payload[:16]
+        recipient_id = recipient_id_bytes.decode('ascii').rstrip('\0')
+
+        user = user_storage.get_user_by_id(recipient_id)
+        if user:
+            public_key = user.get("public_key", "")
+            print(f"Sending public key of {recipient_id}: {public_key}")
+            response_packet = build_response(1, 2102, (recipient_id, public_key))
+            send_response(conn, response_packet)
+        else:
+            print(f"Public key request failed. User ID {recipient_id} not found.")
+            response_packet = build_response(1, 2106, b"User not found")
+            send_response(conn, response_packet)
     elif request_code == 603:  # send message
         user_id = header.get("client_id", "").strip()
         user_id = bytes.fromhex(user_id).decode('ascii')
