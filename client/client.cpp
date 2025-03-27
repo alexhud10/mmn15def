@@ -28,7 +28,12 @@ void handle_request(int option, ClientSession& session) {
         string username;
         cout << "Enter username for registration: ";
         getline(cin, session.username);
+        bool existing_id = user_in_file(session.username);
 
+        if (existing_id == true) {
+            cout << "User already registered "<< endl;
+            return;
+        }
         
         // create binary packet for registration request
         vector<uint8_t> packet = create_registration_packet(session.username, "");
@@ -61,7 +66,7 @@ void handle_request(int option, ClientSession& session) {
         getline(cin, recipient);
         string recipient_id = get_id_by_username(recipient);
         if (recipient_id.empty()) {
-            display_err("Recipient not found in local info. Please refresh or check spelling");
+            display_err("Recipient not found in local info");
             return;
         }
         cout << "Enter your message: " << endl;
@@ -86,9 +91,9 @@ void handle_response(ClientSession& session, const Response& resp) {
     const ResponseHeader& h = resp.header;
 
     // for demonstration, convert client_id to hex or just print
-    cout << "Version: " << (int)h.version << "\n";
-    cout << "Code:    " << h.code << "\n";
-    cout << "Payload: " << h.payload_size << " bytes\n";
+    //cout << "Version: " << (int)h.version << "\n";
+    //cout << "Code:    " << h.code << "\n";
+    //cout << "Payload: " << h.payload_size << " bytes\n";
 
     switch (h.code) {
     case 2100: { // registration success
@@ -99,19 +104,16 @@ void handle_response(ClientSession& session, const Response& resp) {
         }
 
         string clientID(resp.payload.begin(), resp.payload.begin() + 16);
-        cout << "Registration success! Client ID: " << clientID << "\n";
+        cout << "Registration success!" << "\n";
         // add user id to session
         session.client_id = clientID;
 
         // save username and client ID to "my.info"
-        //ofstream myInfoFile("C:\\Users\\Alexa\\Documents\\OU\\????? ?????? ???????\\mmn 15\\mmn15def\\x64\\Debug", ios::app);
-        ofstream myInfoFile("my.info", ios::app);
-        //std::string my v vInfoPath = get_executable_directory() + "\\my.info";
-        //ofstream myInfoFile(myInfoPath, ios::app);
+        ofstream myInfoFile("my.info", ios::app);;
         if (myInfoFile.is_open()) {
             myInfoFile << session.username << "\n" << clientID << "\n";
             myInfoFile.close();
-            cout << "Saved registration info to my.info with id " << session.client_id << "\n";
+            //cout << "Saved registration info to my.info with id " << session.client_id << "\n";
         }
         else {
             cerr << "Error: Could not open my.info for writing.\n";
@@ -149,7 +151,6 @@ void handle_response(ClientSession& session, const Response& resp) {
         break;
     }
     case 2104: {  //pull messages response
-        cout << "Payload size before processing: " << resp.payload.size() << endl;
         if (resp.payload.empty()) {
             display_message("No new messages.");
             break;
@@ -179,11 +180,6 @@ void handle_response(ClientSession& session, const Response& resp) {
         }
         break;
     }
-    case 2106: {      
-        string errorMsg(resp.payload.begin(), resp.payload.end());
-        cout << "Registration failed: " << errorMsg << "\n";
-        break;
-    }
     case 9000: {
         display_message("General error occurred on the server.");
         break;
@@ -200,10 +196,7 @@ void client_function(const string& server_ip, int server_port, ClientSession &se
     try {
         
         while (true) {
-            /*
-            boost::asio::io_context io_context;  // each client gets its own io_context
-            ClientSession session(io_context);  // each client gets its own socket
-            */
+
             connect_to_server(session.socket, server_ip, server_port);
             
             int usr_input = get_user_input();
@@ -211,9 +204,9 @@ void client_function(const string& server_ip, int server_port, ClientSession &se
             handle_request(usr_input, session);
 
             Response resp = read_response(session.socket);
-            cout << "response from server was read ... " << "\n";
+            //cout << "response from server was read ... " << "\n";
             handle_response(session, resp);
-            cout << "response handled successfuly " << "\n";
+            //cout << "response handled successfuly " << "\n";
         }
     }
     catch (const std::exception& e) {
@@ -240,7 +233,6 @@ int main() {
     boost::asio::io_context io_context;  // each client gets its own io_context
     ClientSession session(io_context);  // each client gets its own socket
 
-    //client_threads.push_back(thread(client_function, server_ip, server_port, std::ref(session)));
     client_threads.push_back(std::thread([&]() {client_function(server_ip, server_port, session);
         }));
 

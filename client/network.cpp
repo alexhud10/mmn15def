@@ -13,7 +13,6 @@ This source file implements the network-related functions
 #include <cstddef>
 
 
-
 using namespace std;  
 
 using boost::asio::ip::tcp;
@@ -76,10 +75,6 @@ vector<uint8_t> message_payload_to_binary(const MessagePayload& payload) {
     uint32_t cs_net = htonl(payload.content_size);
     const uint8_t* cs_ptr = reinterpret_cast<const uint8_t*>(&cs_net);
     binary_data.insert(binary_data.end(), cs_ptr, cs_ptr + 4);
-    //binary_data.push_back((cs_net >> 24) & 0xFF);
-    //binary_data.push_back((cs_net >> 16) & 0xFF);
-    //binary_data.push_back((cs_net >> 8) & 0xFF);
-    //binary_data.push_back(cs_net & 0xFF);
 
     // append message content.
     binary_data.insert(binary_data.end(), payload.message_content.begin(), payload.message_content.end());
@@ -190,12 +185,6 @@ Response read_response(tcp::socket& socket) {
 
     boost::asio::read(socket, boost::asio::buffer(headerBuf.data(), headerBuf.size()));
 
-    cout << "Raw header bytes received: ";
-    for (auto b : headerBuf) {
-        printf("%02X ", b);
-    }
-    cout << endl;
-
     // copy the raw bytes into a Header struct
     ResponseHeader rawHeader;
     memcpy(&rawHeader, headerBuf.data(), sizeof(ResponseHeader)); //destination, source, number of bytes to copy 
@@ -204,14 +193,14 @@ Response read_response(tcp::socket& socket) {
     rawHeader.code = ntohs(rawHeader.code);
     rawHeader.payload_size = ntohl(rawHeader.payload_size);
 
-    cout << "Decoded header from server: version=" << (int)rawHeader.version
-        << ", code=" << rawHeader.code
-        << ", payload_size=" << rawHeader.payload_size << endl;
+   // cout << "Decoded header from server: version=" << (int)rawHeader.version
+   //     << ", code=" << rawHeader.code
+   //     << ", payload_size=" << rawHeader.payload_size << endl;
 
     // read the payload (if any)
     std::vector<uint8_t> payload;
     if (rawHeader.payload_size > 0) {
-        cout << "payload is greater than 0" << "\n";
+        //cout << "payload is greater than 0" << "\n";
         payload.resize(rawHeader.payload_size);
         boost::asio::read(socket, boost::asio::buffer(payload.data(), payload.size()));
     }
@@ -251,25 +240,13 @@ void send_data(tcp::socket& socket, const vector<uint8_t>& data) {
     try {
         // send the binary info to the server
         boost::asio::write(socket, boost::asio::buffer(data.data(), data.size()));
-        cout << "sent: " << data.size() << " bytes of data" << endl;
+        //cout << "sent: " << data.size() << " bytes of data" << endl;
     }
     catch (exception& e) {  
         cerr << "Error sending data: " << e.what() << endl;
     }
 }
-/*
-string receive_data(tcp::socket& socket) {
-    try {
-        char response[128];
-        size_t length = socket.read_some(boost::asio::buffer(response));
-        string received(response, length);
-        return received;
-    }
-    catch (std::exception& e) {
-        cerr << "Error receiving message: " << e.what() << endl;
-        return "";
-    }
-}*/
+
 
 void close_connection(tcp::socket& socket) {
     socket.close();  // close the connection after use

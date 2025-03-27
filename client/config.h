@@ -3,11 +3,14 @@
 #define CONFIG_H
 
 #include <string>
+#include <iostream>
 
 class config {
 public:
     config();  // constructor
+
     void load_file(const std::string& filename);  // loads file with port and ip info
+
     std::string get_ip() const;  
     int get_port() const;  
 

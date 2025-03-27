@@ -5,11 +5,13 @@
 #include <string>
 #include <fstream>
 #include "client_ui.h" 
+#include <filesystem>
 
 
 // get id from my.info
 string get_id_by_username(const string& username) {
-    ifstream file("my.info", ios::app);
+
+    ifstream file("my.info");
 
     if (!file.is_open()) {
         display_err("Error: Could not open my.info for reading");
@@ -25,6 +27,23 @@ string get_id_by_username(const string& username) {
 
     display_err("Username not found in my.info");
     return "";
+}
+
+//check if user name is in my.info
+bool user_in_file(const string& username) {
+    ifstream file("my.info");
+    if (!file.is_open()) {
+        return false;  
+    }
+
+    string file_username, file_userid;
+    while (getline(file, file_username) && getline(file, file_userid)) {
+        if (file_username == username) {
+            return true;  
+        }
+    }
+
+    return false;  
 }
 
 string get_username_by_id(const string& user_id) {

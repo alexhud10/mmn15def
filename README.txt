@@ -4,6 +4,8 @@ Visual Studio 2019 (for C++ client)
 Python 3.8.2 (for server)
 Crypto++ compiled and linked (for client)
 
+.exe file in \mmn15def\Debug
+
 --overview:
 This project implements a client-server communication system using a custom binary protocol over TCP. 
 The server is written in Python, and the client is written in C++. 

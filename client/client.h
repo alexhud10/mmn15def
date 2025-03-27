@@ -5,6 +5,7 @@
 #include <string>
 #include "config.h"
 #include "network.h"  
+#include "RSAWrapper.h"
 using boost::asio::ip::tcp;
 using namespace std;
 
@@ -13,6 +14,9 @@ public:
     std::string username; // holds the username entered by the user.
     std::string client_id; // holds id the assigned from registration
     tcp::socket socket;
+    RSAPrivateWrapper rsaPrivate;
+    std::string rsaPublicKey;
+    std::string rsaPrivateKey;
 
     // constructor: initializes the socket with the io_context.
     ClientSession(boost::asio::io_context& io_context)
