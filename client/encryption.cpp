@@ -12,31 +12,8 @@
 std::unordered_map<std::string, AESWrapper> symmetric_keys;
 std::unordered_map<std::string, std::string> known_public_keys;
 
+/*
 
-std::string request_public_key(const std::string& recipient_id, ClientSession& session) {
-    // Build request packet (602) asking for recipient's public key
-    Header header;
-    header.version = 1;
-    header.code = 602;
-
-    std::string cid = recipient_id;
-    if (cid.size() < 16) cid.append(16 - cid.size(), '\0');
-    memcpy(header.client_id, cid.data(), 16);
-    header.payload_size = 0;
-
-    std::vector<uint8_t> packet = header_to_binary(header);
-    send_data(session.socket, packet);
-
-    Response resp = read_response(session.socket);
-
-    if (resp.header.code == 2102 && resp.payload.size() == (16 + 160)) {
-        std::string public_key(resp.payload.begin() + 16, resp.payload.end());
-        return public_key;
-    }
-    else {
-        throw std::runtime_error("Failed to get public key from server");
-    }
-}
 
 void send_symmetric_key(const std::string& recipient_id, const std::string& public_key, ClientSession& session, const std::string& sender_id) {
     AESWrapper aes;
@@ -85,3 +62,5 @@ void save_received_symmetric_key(const std::string& sender_id, const std::string
 bool has_symmetric_key_for_user(const std::string& user_id) {
     return symmetric_keys.find(user_id) != symmetric_keys.end();
 }
+
+*/

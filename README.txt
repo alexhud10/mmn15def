@@ -84,7 +84,7 @@ Configuration file containing the IP address and port the server should use.
 Some planned features were not completed by the submission time, these include:
 
 Message Encryption: The system was designed to use hybrid encryption (RSA for key exchange and AES for message encryption). 
-Although the Crypto++ library and wrappers were integrated, full encryption flow was not finished.
+Although the Crypto++ library and wrappers were integrated, regiatration and request 130 (public key) was done, but full encryption flow was not finished.
 
 
 

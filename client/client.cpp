@@ -98,9 +98,11 @@ void handle_request(int option, ClientSession& session) {
         getline(cin, message);
 
         // binary packet for sending message
-        vector<uint8_t> packet = create_message_packet(session.client_id, recipient_id, message);
+        uint8_t m_type = 3;
+        vector<uint8_t> packet = create_message_packet(session.client_id, recipient_id, message, m_type);
         send_data(session.socket, packet);  // Send message to server
     }
+
     else if (option == 0) {
         cout << "Exiting client. Releasing resources..." << endl;
         close_connection(session.socket);  
@@ -115,6 +117,7 @@ void handle_request(int option, ClientSession& session) {
 //===========================
 // handle request from server (code 2xxx)
 //===========================
+
 
 // getting response(raw header and payload) from read_response function and handle it
 void handle_response(ClientSession& session, const Response& resp) {

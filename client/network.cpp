@@ -153,7 +153,7 @@ vector<uint8_t> create_get_public_key_packet(const string& sender_id, const stri
 
 
 
-vector<uint8_t> create_message_packet(const string& sender_id, const string& recipient, const string& message) {
+vector<uint8_t> create_message_packet(const string& sender_id, const string& recipient, const string& message, uint8_t m_type) {
     Header header;
     MessagePayload payload;
     string cid = sender_id;
@@ -163,7 +163,7 @@ vector<uint8_t> create_message_packet(const string& sender_id, const string& rec
     header.code = 603;  
     memcpy(header.client_id, cid.data(), 16);
 
-    payload.message_type = 3;  
+    payload.message_type = m_type;
     payload.message_content = message;
     payload.content_size = message.size();
     memcpy(payload.recipient_id, rid.data(), 16);

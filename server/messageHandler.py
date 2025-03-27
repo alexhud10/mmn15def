@@ -136,26 +136,29 @@ def process_request(header, payload, conn, user_storage, user_manager):
             send_response(conn, response_packet)
         else:
             print(f"Public key request failed. User ID {recipient_id} not found.")
-            response_packet = build_response(1, 2106, b"User not found")
+            response_packet = build_response(1, 9000, b"User not found")
             send_response(conn, response_packet)
     elif request_code == 603:  # send message
         user_id = header.get("client_id", "").strip()
         user_id = bytes.fromhex(user_id).decode('ascii')
+        # extract message details from the payload
         recipient_id, message_type, content_size, message_content = process_message(user_id, payload)
         # recipient validation:
         recipient_user = user_storage.get_user_by_id(recipient_id)
         if not recipient_user:
             print(f"Recipient ID {recipient_id} not found.")
-            response_packet = build_response(1, 2106, b'User does not exist')
+            response_packet = build_response(1, 9000)
             send_response(conn, response_packet)
             return
-
+        # verify that the recipient's username exists in storage
         if recipient_user and not user_storage.username_exists(recipient_user['username']):
             print(f"Recipient username {recipient_user['username']} not found.")
-            response_packet = build_response(1, 2106, b'User does not exist')
+            response_packet = build_response(1, 9000)
             send_response(conn, response_packet)
             return
 
+        # build a response packet, send it
+        # save messages to storage in message_storage.py
         response_data = (recipient_id, message_type, content_size, message_content)
         response_packet = build_response(1, 2103, response_data)
         send_response(conn, response_packet)
