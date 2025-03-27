@@ -4,12 +4,4 @@
   - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
   - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
   Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
-  network.cpp
-  Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
-  - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
-  - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
-  Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
-C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\client\network.cpp(101,42): warning C4267: '=': conversion from 'size_t' to 'uint8_t', possible loss of data
-C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\client\network.cpp(103,50): warning C4267: '=': conversion from 'size_t' to 'uint8_t', possible loss of data
-  Generating Code...
   client.vcxproj -> C:\Users\Alexa\Documents\OU\תכנות מערכות דפנסיבי\mmn 15\mmn15def\Debug\client.exe

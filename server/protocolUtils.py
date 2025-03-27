@@ -63,15 +63,15 @@ def process_registration(payload, user_storage, user_manager):
     if len(payload) < 1 + name_length + 1:
         print("Error: Payload missing username or public key length.")
         return False, "Invalid payload"
-
     username = payload[1:1 + name_length].decode('utf-8')
+
     pk_index = 1 + name_length
     public_key_length = payload[pk_index]
     if len(payload) < pk_index + 1 + public_key_length:
         public_key = None
     else:
-        public_key = payload[pk_index + 1: pk_index + 1 + public_key_length].decode('utf-8')
-
+        public_key_raw = payload[pk_index + 1: pk_index + 1 + public_key_length]
+        public_key = public_key_raw.decode('utf-8')
     print(f"Registration request for username: {username}")
 
     if user_storage.username_exists(username):

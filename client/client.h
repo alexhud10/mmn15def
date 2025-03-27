@@ -14,7 +14,7 @@ public:
     std::string username; // holds the username entered by the user.
     std::string client_id; // holds id the assigned from registration
     tcp::socket socket;
-    RSAPrivateWrapper rsaPrivate;
+    std::unique_ptr<RSAPrivateWrapper> rsaPrivate;
     std::string rsaPublicKey;
     std::string rsaPrivateKey;
 
